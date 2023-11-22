@@ -44,7 +44,10 @@ def compute_dp_marginal_distribution(
     # marginal distribution and increase the probability 1/n in the remaining cells
     sensitivity = 2 / (population_size + 1e-8)
     dp_mech = LaplaceTruncated(
-        epsilon=epsilon, lower=0, upper=np.iinfo(np.int32).max, sensitivity=sensitivity
+        epsilon=epsilon,
+        lower=0,
+        upper=np.iinfo(np.int32).max,
+        sensitivity=sensitivity,
     )
 
     dp_marginal = np.zeros_like(marginal_distribution.values)
@@ -66,7 +69,10 @@ def dp_contingency_table(data: pd.DataFrame, epsilon: float) -> Factor:
     # if we remove one record from X the count in one cell decreases by 1 while the rest stays the same.
     sensitivity = 1
     dp_mech = LaplaceTruncated(
-        epsilon=epsilon, lower=0, upper=maxsize, sensitivity=sensitivity
+        epsilon=epsilon,
+        lower=0,
+        upper=maxsize,
+        sensitivity=sensitivity,
     )
 
     contingency_table_values = contingency_table_.values.flatten()
@@ -74,7 +80,7 @@ def dp_contingency_table(data: pd.DataFrame, epsilon: float) -> Factor:
     for i in np.arange(dp_contingency_table.shape[0]):
         # round counts upwards to preserve bins with noisy count between [0, 1]
         dp_contingency_table[i] = np.ceil(
-            dp_mech.randomise(contingency_table_values[i])
+            dp_mech.randomise(contingency_table_values[i]),
         )
 
     return Factor(dp_contingency_table, states=contingency_table_.states)
@@ -88,7 +94,10 @@ def dp_marginal_distribution(data: pd.DataFrame, epsilon: float) -> Factor:
     # marginal distribution and increase the probability 1/n in the remaining cells
     sensitivity = 2 / data.shape[0]
     dp_mech = LaplaceTruncated(
-        epsilon=epsilon, lower=0, upper=maxsize, sensitivity=sensitivity
+        epsilon=epsilon,
+        lower=0,
+        upper=maxsize,
+        sensitivity=sensitivity,
     )
 
     dp_marginal = np.zeros_like(marginal_.values)
@@ -109,7 +118,10 @@ def dp_joint_distribution(data: pd.DataFrame, epsilon: float) -> Factor:
     # joint distribution and increase the probability 1/n in the remaining cells
     sensitivity = 2 / data.shape[0]
     dp_mech = LaplaceTruncated(
-        epsilon=epsilon, lower=0, upper=maxsize, sensitivity=sensitivity
+        epsilon=epsilon,
+        lower=0,
+        upper=maxsize,
+        sensitivity=sensitivity,
     )
 
     joint_distribution_values = joint_distribution_.values.flatten()
@@ -123,7 +135,9 @@ def dp_joint_distribution(data: pd.DataFrame, epsilon: float) -> Factor:
 
 
 def dp_conditional_distribution(
-    data: pd.DataFrame, epsilon: float, conditioned: Any = None
+    data: pd.DataFrame,
+    epsilon: float,
+    conditioned: Any = None,
 ) -> CPT:
     """Compute differentially private conditional distribution of input data
     Inferred from marginal or joint distribution"""

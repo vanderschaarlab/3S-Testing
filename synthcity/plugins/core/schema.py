@@ -60,15 +60,20 @@ class Schema(BaseModel):
             for col in X.columns:
                 if X[col].dtype == "object" or len(X[col].unique()) < 10:
                     feature_domain[col] = CategoricalDistribution(
-                        name=col, choices=list(X[col].unique())
+                        name=col,
+                        choices=list(X[col].unique()),
                     )
                 elif X[col].dtype in ["int", "int32", "int64", "uint32", "uint64"]:
                     feature_domain[col] = IntegerDistribution(
-                        name=col, low=X[col].min(), high=X[col].max()
+                        name=col,
+                        low=X[col].min(),
+                        high=X[col].max(),
                     )
                 elif X[col].dtype in ["float", "float64", "double"]:
                     feature_domain[col] = FloatDistribution(
-                        name=col, low=X[col].min(), high=X[col].max()
+                        name=col,
+                        low=X[col].min(),
+                        high=X[col].max(),
                     )
                 else:
                     raise ValueError("unsupported format ", col)
@@ -133,7 +138,8 @@ class Schema(BaseModel):
 
     def sample(self, count: int) -> pd.DataFrame:
         samples = pd.DataFrame(
-            np.zeros((count, len(self.features()))), columns=self.features()
+            np.zeros((count, len(self.features()))),
+            columns=self.features(),
         )
 
         for feature in self.features():
@@ -146,7 +152,8 @@ class Schema(BaseModel):
             if feature not in X.columns:
                 continue
             X[feature] = X[feature].astype(
-                self.domain[feature].dtype(), errors="ignore"
+                self.domain[feature].dtype(),
+                errors="ignore",
             )
 
         return X

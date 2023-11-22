@@ -21,7 +21,9 @@ __all__ = [
 
 
 def _compute_counts(
-    event: np.ndarray, time: np.ndarray, order: Optional[np.ndarray] = None
+    event: np.ndarray,
+    time: np.ndarray,
+    order: Optional[np.ndarray] = None,
 ) -> tuple:
     """Count right censored and uncensored samples at each unique time point.
 
@@ -96,7 +98,9 @@ def _compute_counts(
 
 
 def _compute_counts_truncated(
-    event: np.ndarray, time_enter: np.ndarray, time_exit: np.ndarray
+    event: np.ndarray,
+    time_enter: np.ndarray,
+    time_exit: np.ndarray,
 ) -> tuple:
     """Compute counts for left truncated and right censored survival data.
 
@@ -157,7 +161,9 @@ def _compute_counts_truncated(
             idx_exit += 1
 
         risk_set = np.setdiff1d(
-            order_enter[:idx_enter], order_exit[:idx_exit], assume_unique=True
+            order_enter[:idx_enter],
+            order_exit[:idx_exit],
+            assume_unique=True,
         )
         total_counts[i] = len(risk_set)
 
@@ -243,11 +249,13 @@ def kaplan_meier_estimator(
     else:
         if reverse:
             raise ValueError(
-                "The censoring distribution cannot be estimated from left truncated data"
+                "The censoring distribution cannot be estimated from left truncated data",
             )
 
         uniq_times, n_events, n_at_risk = _compute_counts_truncated(
-            event, time_enter, time_exit
+            event,
+            time_enter,
+            time_exit,
         )
 
     # account for 0/0 = nan
@@ -319,7 +327,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
         if self.prob_[-1] > 0 and extends.any():
             raise ValueError(
                 "time must be smaller than largest "
-                "observed time point: {}".format(self.unique_time_[-1])
+                "observed time point: {}".format(self.unique_time_[-1]),
             )
 
         # beyond last time point is zero probability
@@ -388,7 +396,7 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
 
         if (Ghat == 0.0).any():
             raise ValueError(
-                "censoring survival function is zero at one or more time points"
+                "censoring survival function is zero at one or more time points",
             )
 
         weights = np.zeros(time.shape[0])

@@ -34,17 +34,22 @@ def evaluate_c_index(
         (Y_train.iloc[i], T_train.iloc[i]) for i in range(len(Y_train))
     ]
     Y_train_structured = np.array(
-        Y_train_structured, dtype=[("status", "bool"), ("time", "<f8")]
+        Y_train_structured,
+        dtype=[("status", "bool"), ("time", "<f8")],
     )
 
     Y_test_structured = [(Y_test.iloc[i], T_test.iloc[i]) for i in range(len(Y_test))]
     Y_test_structured = np.array(
-        Y_test_structured, dtype=[("status", "bool"), ("time", "<f8")]
+        Y_test_structured,
+        dtype=[("status", "bool"), ("time", "<f8")],
     )
 
     # concordance_index_ipcw expects risk scores
     return concordance_index_ipcw(
-        Y_train_structured, Y_test_structured, Prediction, tau=Time
+        Y_train_structured,
+        Y_test_structured,
+        Prediction,
+        tau=Time,
     )
 
 
@@ -66,22 +71,28 @@ def evaluate_brier_score(
         (Y_train.iloc[i], T_train.iloc[i]) for i in range(len(Y_train))
     ]
     Y_train_structured = np.array(
-        Y_train_structured, dtype=[("status", "bool"), ("time", "<f8")]
+        Y_train_structured,
+        dtype=[("status", "bool"), ("time", "<f8")],
     )
 
     Y_test_structured = [(Y_test.iloc[i], T_test.iloc[i]) for i in range(len(Y_test))]
     Y_test_structured = np.array(
-        Y_test_structured, dtype=[("status", "bool"), ("time", "<f8")]
+        Y_test_structured,
+        dtype=[("status", "bool"), ("time", "<f8")],
     )
 
     # brier_score expects survival scores
     return brier_score(
-        Y_train_structured, Y_test_structured, 1 - Prediction, times=Time
+        Y_train_structured,
+        Y_test_structured,
+        1 - Prediction,
+        times=Time,
     )[0]
 
 
 def km_survival_function(
-    T: np.ndarray, E: np.ndarray
+    T: np.ndarray,
+    E: np.ndarray,
 ) -> Tuple[KaplanMeierFitter, np.ndarray, np.ndarray, np.ndarray]:
     kmf = KaplanMeierFitter().fit(T, E)
     surv_fn = kmf.survival_function_.T.reset_index(drop=True)
@@ -112,10 +123,12 @@ def nonparametric_distance(
     abs_opt: list = []
 
     real_kmf, real_surv, real_hazards, real_constant_hazard = km_survival_function(
-        real_T, real_E
+        real_T,
+        real_E,
     )
     syn_kmf, syn_surv, syn_hazards, syn_constant_hazard = km_survival_function(
-        syn_T, syn_E
+        syn_T,
+        syn_E,
     )
 
     abs_opt = []

@@ -35,7 +35,7 @@ class ParamRepeatPruner:
 
     def register_existing_trials(self) -> None:
         for trial_idx, trial_past in enumerate(
-            self.study.get_trials(states=[optuna.trial.TrialState.COMPLETE])
+            self.study.get_trials(states=[optuna.trial.TrialState.COMPLETE]),
         ):
             if trial_past.values[0] > self.best_score:
                 self.best_score = trial_past.values[0]

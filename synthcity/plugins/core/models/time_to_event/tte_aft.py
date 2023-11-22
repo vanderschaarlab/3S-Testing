@@ -20,7 +20,7 @@ class WeibullAFTTimeToEvent(TimeToEventPlugin):
         self,
         model_search_n_iter: Optional[int] = None,
         device: Any = DEVICE,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 

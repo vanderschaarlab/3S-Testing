@@ -3,7 +3,6 @@ from typing import Any, List, Optional
 
 # third party
 import pandas as pd
-
 # Necessary packages
 from pydantic import validate_arguments
 from xgboost import XGBClassifier
@@ -44,7 +43,7 @@ class SurvivalPipeline(Plugin):
         self.uncensoring_model: Optional[TimeToEventPlugin] = None
         if uncensoring_model != "none":
             self.uncensoring_model = get_tte_model_template(uncensoring_model)(
-                device=device
+                device=device,
             )
 
         self.generator = plugins.Plugins().get(method, device=device, **kwargs)
@@ -84,7 +83,8 @@ class SurvivalPipeline(Plugin):
                 raise RuntimeError("Uncensoring strategies needs a TTE model")
             # Uncensoring
             T_uncensored = pd.Series(
-                self.uncensoring_model.predict(Xcov), index=Xcov.index
+                self.uncensoring_model.predict(Xcov),
+                index=Xcov.index,
             )
             T_uncensored[E == 1] = T[E == 1]
 
@@ -122,8 +122,8 @@ class SurvivalPipeline(Plugin):
                 )
                 generated[self.target_column] = self.censoring_predictor.predict(
                     generated.drop(
-                        columns=[self.target_column, self.time_to_event_column]
-                    )
+                        columns=[self.target_column, self.time_to_event_column],
+                    ),
                 )
                 print(
                     "generated[self.target_column] from censoring clf",
@@ -135,7 +135,7 @@ class SurvivalPipeline(Plugin):
             elif self.strategy == "survival_function":
                 if self.uncensoring_model is not None:
                     generated = generated.drop(
-                        columns=[self.time_to_event_column]
+                        columns=[self.time_to_event_column],
                     )  # remove the generated column
 
                     generated[

@@ -30,15 +30,15 @@ class DatasetAnonymization:
     ) -> None:
         if k_threshold < 1:
             raise ValueError(
-                f"Invalid value for k_threshold = {k_threshold}. Must be >= 1"
+                f"Invalid value for k_threshold = {k_threshold}. Must be >= 1",
             )
         if l_diversity < 1:
             raise ValueError(
-                f"Invalid value for l_threshold = {l_diversity}. Must be >= 1"
+                f"Invalid value for l_threshold = {l_diversity}. Must be >= 1",
             )
         if t_threshold > 1:
             raise ValueError(
-                f"Invalid value for t_threshold = {t_threshold}. Must be < 1"
+                f"Invalid value for t_threshold = {t_threshold}. Must be < 1",
             )
         self.k_threshold = k_threshold
         self.l_diversity = l_diversity
@@ -53,9 +53,9 @@ class DatasetAnonymization:
         evaluator = kAnonymization()
         return bool(
             evaluator.evaluate_data(
-                GenericDataLoader(X, sensitive_features=sensitive_features)
+                GenericDataLoader(X, sensitive_features=sensitive_features),
             )
-            >= self.k_threshold
+            >= self.k_threshold,
         )
 
     def _setup(self, X: pd.DataFrame) -> Tuple[pd.DataFrame, Dict]:
@@ -147,7 +147,7 @@ class DatasetAnonymization:
             grouped_columns = grouped_columns[X_part.columns]
 
             sensitive_counts = X_part.groupby(sensitive_column).agg(
-                {sensitive_column: "count"}
+                {sensitive_column: "count"},
             )
             values = grouped_columns.iloc[0].to_dict()
 
@@ -157,7 +157,7 @@ class DatasetAnonymization:
                 values.update(
                     {
                         sensitive_column: sensitive_value,
-                    }
+                    },
                 )
                 for cnt in range(count):
                     rows.append(values.copy())
@@ -168,7 +168,9 @@ class DatasetAnonymization:
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _get_features(
-        self, X: pd.DataFrame, sensitive_features: List[str] = []
+        self,
+        X: pd.DataFrame,
+        sensitive_features: List[str] = [],
     ) -> List:
         """Return the non-sensitive features from dataset X"""
         features = list(X.columns)
@@ -180,7 +182,10 @@ class DatasetAnonymization:
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _get_spans(
-        self, X: pd.DataFrame, partition: pd.Index, scale: Optional[Dict] = None
+        self,
+        X: pd.DataFrame,
+        partition: pd.Index,
+        scale: Optional[Dict] = None,
     ) -> Dict:
         """Get the spans of all columns in the partition"""
         spans = {}
@@ -196,7 +201,11 @@ class DatasetAnonymization:
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _split(
-        self, X: pd.DataFrame, partition: pd.Index, column: str, categoricals: list
+        self,
+        X: pd.DataFrame,
+        partition: pd.Index,
+        column: str,
+        categoricals: list,
     ) -> Tuple:
         """Return two partitions that split the given partition such that :
         * All rows with values of the column below the median are in one partition
@@ -243,9 +252,17 @@ class DatasetAnonymization:
             for column, span in sorted(spans.items(), key=lambda x: -x[1]):
                 lp, rp = self._split(X, partition, column, categoricals)
                 if not self._is_partition_anonymous(
-                    X, lp, sensitive_column, freqs, categoricals
+                    X,
+                    lp,
+                    sensitive_column,
+                    freqs,
+                    categoricals,
                 ) or not self._is_partition_anonymous(
-                    X, rp, sensitive_column, freqs, categoricals
+                    X,
+                    rp,
+                    sensitive_column,
+                    freqs,
+                    categoricals,
                 ):
                     continue
                 partitions.extend((lp, rp))
@@ -315,6 +332,9 @@ class DatasetAnonymization:
             self._is_k_anonymous(Xpartition)
             and self._is_l_diverse(Xpartition, sensitive_column)
             and self._is_t_close(
-                Xpartition, sensitive_column, frequencies, categorical_columns
+                Xpartition,
+                sensitive_column,
+                frequencies,
+                categorical_columns,
             )
         )

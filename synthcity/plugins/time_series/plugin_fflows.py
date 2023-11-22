@@ -62,7 +62,7 @@ class FourierFlowsPlugin(Plugin):
         static_model: str = "ctgan",
         device: Any = DEVICE,
         encoder_max_clusters: int = 10,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.static_model_name = static_model
@@ -83,11 +83,12 @@ class FourierFlowsPlugin(Plugin):
         ).to(device)
 
         self.static_model = GenericPlugins().get(
-            self.static_model_name, device=self.device
+            self.static_model_name,
+            device=self.device,
         )
 
         self.temporal_encoder = TimeSeriesTabularEncoder(
-            max_clusters=encoder_max_clusters
+            max_clusters=encoder_max_clusters,
         )
         self.outcome_encoder = TabularEncoder(max_clusters=encoder_max_clusters)
 
@@ -111,7 +112,8 @@ class FourierFlowsPlugin(Plugin):
             CategoricalDistribution(name="flip", choices=[True, False]),
             CategoricalDistribution(name="normalize", choices=[True, False]),
             CategoricalDistribution(
-                name="static_model", choices=["ctgan", "adsgan", "privbayes"]
+                name="static_model",
+                choices=["ctgan", "adsgan", "privbayes"],
             ),
             IntegerDistribution(name="encoder_max_clusters", low=2, high=20),
         ]
@@ -134,7 +136,8 @@ class FourierFlowsPlugin(Plugin):
         ) = self.temporal_encoder.transform_temporal(temporal, temporal_horizons)
 
         static_data_with_horizons = np.concatenate(
-            [np.asarray(static), np.asarray(temporal_horizons)], axis=1
+            [np.asarray(static), np.asarray(temporal_horizons)],
+            axis=1,
         )
         self.static_model.fit(pd.DataFrame(static_data_with_horizons))
 
@@ -190,7 +193,7 @@ class FourierFlowsPlugin(Plugin):
             temporal_enc = []
             for item in temporal_enc_raw:
                 temporal_enc.append(
-                    pd.DataFrame(item, columns=self.temporal_encoded_columns)
+                    pd.DataFrame(item, columns=self.temporal_encoded_columns),
                 )
 
             # Decoding
@@ -198,13 +201,14 @@ class FourierFlowsPlugin(Plugin):
                 temporal_raw,
                 temporal_horizons,
             ) = self.temporal_encoder.inverse_transform_temporal(
-                temporal_enc, temporal_horizons_enc.tolist()
+                temporal_enc,
+                temporal_horizons_enc.tolist(),
             )
 
             temporal = []
             for item in temporal_raw:
                 temporal.append(
-                    pd.DataFrame(item, columns=self.data_info["temporal_features"])
+                    pd.DataFrame(item, columns=self.data_info["temporal_features"]),
                 )
 
             # Outcome generation
@@ -218,7 +222,8 @@ class FourierFlowsPlugin(Plugin):
             )
             outcome_raw = self.outcome_encoder.inverse_transform(outcome_enc)
             outcome = pd.DataFrame(
-                outcome_raw, columns=self.data_info["outcome_features"]
+                outcome_raw,
+                columns=self.data_info["outcome_features"],
             )
             static = pd.DataFrame(static, columns=self.data_info["static_features"])
 

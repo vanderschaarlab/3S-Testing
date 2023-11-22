@@ -160,3 +160,12 @@ cython_debug/
 #.idea/
 
 # specific
+data/*
+!data/Data-Private.md
+!data/Data-Public.md
+models/*
+!models/placeholder.txt
+results/*
+!results/placeholder.txt
+reqs_from_conda.txt
+requirements_autogen.txt

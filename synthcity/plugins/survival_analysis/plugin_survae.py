@@ -3,7 +3,6 @@ from typing import Any, List
 
 # third party
 import pandas as pd
-
 # Necessary packages
 from pydantic import validate_arguments
 
@@ -54,7 +53,7 @@ class SurVAEPlugin(Plugin):
         ]
         if dataloader_sampling_strategy not in valid_sampling_strategies:
             raise ValueError(
-                f"Invalid sampling strategy {dataloader_sampling_strategy}. Supported values: {valid_sampling_strategies}"
+                f"Invalid sampling strategy {dataloader_sampling_strategy}. Supported values: {valid_sampling_strategies}",
             )
         self.tte_strategy = tte_strategy
         self.censoring_strategy = censoring_strategy
@@ -68,7 +67,7 @@ class SurVAEPlugin(Plugin):
                 tte_strategy = {self.tte_strategy};
                 uncensoring_model={self.uncensoring_model}
                 device={self.device}
-            """
+            """,
         )
 
     @staticmethod

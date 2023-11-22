@@ -11,10 +11,8 @@ from typing import Any, Dict, List, Tuple
 # third party
 import numpy as np
 import pandas as pd
-
 # Necessary packages
 import torch
-
 # Necessary packages
 from pydantic import validate_arguments
 from sklearn.linear_model import LogisticRegression
@@ -89,12 +87,12 @@ class Teachers(Serializable):
                     np.ones(
                         [
                             self.partition_size,
-                        ]
+                        ],
                     ),
                     np.zeros(
                         [
                             self.partition_size,
-                        ]
+                        ],
                     ),
                 ),
                 axis=0,
@@ -253,7 +251,7 @@ class PATEGAN(Serializable):
         while epsilon_hat < self.epsilon and it < self.max_iter:
             it += 1
             log.debug(
-                f"[pategan it {it}] epsilon_hat = {epsilon_hat}. self.epsilon = {self.epsilon}"
+                f"[pategan it {it}] epsilon_hat = {epsilon_hat}. self.epsilon = {self.epsilon}",
             )
 
             log.debug(f"[pategan it {it}] 1. Train teacher models")
@@ -279,7 +277,7 @@ class PATEGAN(Serializable):
                 n0_mb, n1_mb, Y_mb = teachers.pate_lamda(np.asarray(X_batch))
                 if np.sum(Y_mb) >= len(X) / 2:
                     log.debug(
-                        f"[pategan it {it}] Teachers high error-rate: n0 = {len(X) - np.sum(Y_mb)}, n1 = {np.sum(Y_mb)}"
+                        f"[pategan it {it}] Teachers high error-rate: n0 = {len(X) - np.sum(Y_mb)}, n1 = {np.sum(Y_mb)}",
                     )
                     return torch.zeros((len(X),))
 
@@ -293,18 +291,20 @@ class PATEGAN(Serializable):
 
                 # PATE labels for X
                 return torch.from_numpy(
-                    np.reshape(np.asarray(Y_mb, dtype=int), [-1, 1])
+                    np.reshape(np.asarray(Y_mb, dtype=int), [-1, 1]),
                 )
 
             self.model.fit(
-                X_train_enc, fake_labels_generator=fake_labels_generator, encoded=True
+                X_train_enc,
+                fake_labels_generator=fake_labels_generator,
+                encoded=True,
             )
 
             # epsilon_hat computation
             curr_list: List = []
             for lidx in range(self.alpha):
                 temp_alpha = (self.alpha_dict[lidx] + np.log(1 / self.delta)) / float(
-                    lidx + 1
+                    lidx + 1,
                 )
                 curr_list = curr_list + [temp_alpha]
 
@@ -472,16 +472,23 @@ class PATEGANPlugin(Plugin):
             IntegerDistribution(name="n_iter", low=1, high=15),
             IntegerDistribution(name="generator_n_layers_hidden", low=1, high=4),
             IntegerDistribution(
-                name="generator_n_units_hidden", low=50, high=150, step=50
+                name="generator_n_units_hidden",
+                low=50,
+                high=150,
+                step=50,
             ),
             CategoricalDistribution(
-                name="generator_nonlin", choices=["relu", "leaky_relu", "tanh", "elu"]
+                name="generator_nonlin",
+                choices=["relu", "leaky_relu", "tanh", "elu"],
             ),
             IntegerDistribution(name="generator_n_iter", low=1, high=10),
             FloatDistribution(name="generator_dropout", low=0, high=0.2),
             IntegerDistribution(name="discriminator_n_layers_hidden", low=1, high=4),
             IntegerDistribution(
-                name="discriminator_n_units_hidden", low=50, high=150, step=50
+                name="discriminator_n_units_hidden",
+                low=50,
+                high=150,
+                step=50,
             ),
             CategoricalDistribution(
                 name="discriminator_nonlin",
@@ -494,12 +501,14 @@ class PATEGANPlugin(Plugin):
             CategoricalDistribution(name="batch_size", choices=[64, 128, 256, 512]),
             IntegerDistribution(name="n_teachers", low=5, high=15),
             CategoricalDistribution(
-                name="teacher_template", choices=["linear", "xgboost"]
+                name="teacher_template",
+                choices=["linear", "xgboost"],
             ),
             IntegerDistribution(name="encoder_max_clusters", low=2, high=20),
             FloatDistribution(name="lamda", low=1, high=10),
             CategoricalDistribution(
-                name="delta", choices=[1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8]
+                name="delta",
+                choices=[1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8],
             ),
             IntegerDistribution(name="alpha", low=2, high=50),
         ]

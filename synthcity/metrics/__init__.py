@@ -107,7 +107,7 @@ class Metrics:
         ]
         if task_type not in supported_tasks:
             raise ValueError(
-                f"Invalid task type {task_type}. Supported: {supported_tasks}"
+                f"Invalid task type {task_type}. Supported: {supported_tasks}",
             )
 
         if not isinstance(X_gt, DataLoader):

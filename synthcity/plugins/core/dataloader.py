@@ -287,7 +287,7 @@ class SurvivalAnalysisDataLoader(DataLoader):
 
         if time_to_event_column not in data.columns:
             raise ValueError(
-                f"Time to event column {time_to_event_column} not found in the dataframe"
+                f"Time to event column {time_to_event_column} not found in the dataframe",
             )
 
         T = data[time_to_event_column]
@@ -405,7 +405,10 @@ class SurvivalAnalysisDataLoader(DataLoader):
     def train(self) -> "DataLoader":
         stratify = self.data[self.target_column]
         train_data, _ = train_test_split(
-            self.data, train_size=self.train_size, random_state=0, stratify=stratify
+            self.data,
+            train_size=self.train_size,
+            random_state=0,
+            stratify=stratify,
         )
         return self.decorate(
             train_data.reset_index(drop=True),
@@ -693,7 +696,7 @@ class TimeSeriesDataLoader(DataLoader):
 
         for idx, item in enumerate(self.data["temporal_data"]):
             self.data["temporal_data"][idx] = self.data["temporal_data"][idx].fillna(
-                value
+                value,
             )
 
         return self
@@ -746,7 +749,10 @@ class TimeSeriesDataLoader(DataLoader):
             temporal_horizons,
             outcome,
         ) = TimeSeriesDataLoader.pad_raw_features(
-            static_data, temporal_data, temporal_horizons, outcome
+            static_data,
+            temporal_data,
+            temporal_horizons,
+            outcome,
         )
         max_window_len = max([len(t) for t in temporal_data])
         temporal_features = TimeSeriesDataLoader.unique_temporal_features(temporal_data)
@@ -754,7 +760,7 @@ class TimeSeriesDataLoader(DataLoader):
         for idx, item in enumerate(temporal_data):
             if len(item) != max_window_len:
                 pads = fill * np.ones(
-                    (max_window_len - len(item), len(temporal_features))
+                    (max_window_len - len(item), len(temporal_features)),
                 )
                 start = 0
                 if len(item.index) > 0:
@@ -840,7 +846,7 @@ class TimeSeriesDataLoader(DataLoader):
     ) -> Any:
         temporal_features = TimeSeriesDataLoader.unique_temporal_features(temporal_data)
         temporal_features, mask_features = TimeSeriesDataLoader.extract_masked_features(
-            temporal_features
+            temporal_features,
         )
 
         missing_horizons = []
@@ -905,7 +911,9 @@ class TimeSeriesDataLoader(DataLoader):
             )
 
         temporal_data, temporal_horizons = TimeSeriesDataLoader.mask_temporal_data(
-            temporal_data, temporal_horizons, fill=fill
+            temporal_data,
+            temporal_horizons,
+            fill=fill,
         )
 
         return static_data, temporal_data, temporal_horizons, outcome
@@ -926,7 +934,11 @@ class TimeSeriesDataLoader(DataLoader):
             temporal_horizons,
             outcome,
         ) = TimeSeriesDataLoader.pad_and_mask(
-            static_data, temporal_data, temporal_horizons, outcome, only_features=True
+            static_data,
+            temporal_data,
+            temporal_horizons,
+            outcome,
+            only_features=True,
         )
         raw_static_features = list(static_data.columns)
         static_features = [f"seq_static_{col}" for col in raw_static_features]
@@ -935,7 +947,7 @@ class TimeSeriesDataLoader(DataLoader):
         outcome_features = [f"seq_out_{col}" for col in raw_outcome_features]
 
         raw_temporal_features = TimeSeriesDataLoader.unique_temporal_features(
-            temporal_data
+            temporal_data,
         )
         temporal_features = [f"seq_temporal_{col}" for col in raw_temporal_features]
         cols = (
@@ -987,10 +999,11 @@ class TimeSeriesDataLoader(DataLoader):
         # Temporal data: (subjects, temporal_sequence, temporal_feature)
         temporal_features = TimeSeriesDataLoader.unique_temporal_features(temporal_data)
         temporal_features, mask_features = TimeSeriesDataLoader.extract_masked_features(
-            temporal_features
+            temporal_features,
         )
         temporal_data, temporal_horizons = TimeSeriesDataLoader.unmask_temporal_data(
-            temporal_data, temporal_horizons
+            temporal_data,
+            temporal_horizons,
         )
         seq_df, info = TimeSeriesDataLoader.sequential_view(
             static_data=static_data,
@@ -1008,7 +1021,10 @@ class TimeSeriesDataLoader(DataLoader):
         data: pd.DataFrame,
         info: dict,
     ) -> Tuple[
-        Optional[pd.DataFrame], List[pd.DataFrame], List, Optional[pd.DataFrame]
+        Optional[pd.DataFrame],
+        List[pd.DataFrame],
+        List,
+        Optional[pd.DataFrame],
     ]:
         id_col = info["seq_id_feature"]
         time_col = info["seq_time_id_feature"]
@@ -1034,7 +1050,7 @@ class TimeSeriesDataLoader(DataLoader):
 
             static_data.append(item_data[static_cols].head(1).values.squeeze().tolist())
             outcome_data.append(
-                item_data[outcome_cols].head(1).values.squeeze().tolist()
+                item_data[outcome_cols].head(1).values.squeeze().tolist(),
             )
             local_temporal_data = item_data[temporal_cols].copy()
             local_temporal_horizons = item_data[time_col].values.tolist()
@@ -1106,11 +1122,11 @@ class TimeSeriesSurvivalDataLoader(TimeSeriesDataLoader):
         static_data, temporal_data, temporal_horizons, outcome = data
         if self.time_to_event_col not in outcome:
             raise ValueError(
-                f"Survival outcome is missing tte column {self.time_to_event_col}"
+                f"Survival outcome is missing tte column {self.time_to_event_col}",
             )
         if self.event_col not in outcome:
             raise ValueError(
-                f"Survival outcome is missing event column {self.event_col}"
+                f"Survival outcome is missing event column {self.event_col}",
             )
 
         return TimeSeriesSurvivalDataLoader(

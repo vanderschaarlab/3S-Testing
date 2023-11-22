@@ -6,7 +6,9 @@ import numpy as np
 
 
 def get_padded_features(
-    x: np.ndarray, pad_size: Optional[int] = None, fill: int = np.nan
+    x: np.ndarray,
+    pad_size: Optional[int] = None,
+    fill: int = np.nan,
 ) -> np.ndarray:
     """Helper function to pad variable length RNN inputs with nans."""
     if pad_size is None:

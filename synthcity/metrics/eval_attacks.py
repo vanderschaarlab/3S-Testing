@@ -65,7 +65,7 @@ class AttackEvaluator(MetricEvaluator):
             preds = model.predict(test_keys_data.values)
 
             output.append(
-                (np.asarray(preds) == np.asarray(test_target)).sum() / (len(preds) + 1)
+                (np.asarray(preds) == np.asarray(test_target)).sum() / (len(preds) + 1),
             )
 
         if len(output) == 0:

@@ -40,7 +40,7 @@ class XGBTimeToEvent(TimeToEventPlugin):
         strategy: str = "debiased_bce",  # "weibull", "debiased_bce", "km"
         time_points: int = 100,
         device: Any = DEVICE,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -145,6 +145,7 @@ class XGBTimeToEvent(TimeToEventPlugin):
             IntegerDistribution(name="min_child_weight", low=0, high=50),
             CategoricalDistribution(name="objective", choices=["aft", "cox"]),
             CategoricalDistribution(
-                name="strategy", choices=["weibull", "debiased_bce", "km"]
+                name="strategy",
+                choices=["weibull", "debiased_bce", "km"],
             ),
         ]

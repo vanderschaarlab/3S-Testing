@@ -163,13 +163,14 @@ class TimeSeriesModel(nn.Module):
 
             if self.n_units_out % self.n_act_out != 0:
                 raise RuntimeError(
-                    f"Shape mismatch for the output layer. Expected length {self.n_units_out}, but got {nonlin_out} with length {self.n_act_out}"
+                    f"Shape mismatch for the output layer. Expected length {self.n_units_out}, but got {nonlin_out} with length {self.n_act_out}",
                 )
             self.out_activation = MultiActivationHead(activations, device=device)
         elif self.task_type == "classification":
             self.n_act_out = self.n_units_out
             self.out_activation = MultiActivationHead(
-                [(nn.Softmax(dim=-1), self.n_units_out)], device=device
+                [(nn.Softmax(dim=-1), self.n_units_out)],
+                device=device,
             )
 
         self.optimizer = torch.optim.Adam(
@@ -194,7 +195,8 @@ class TimeSeriesModel(nn.Module):
 
         if self.use_horizon_condition:
             temporal_data_merged = torch.cat(
-                [temporal_data, temporal_horizons.unsqueeze(2)], dim=2
+                [temporal_data, temporal_horizons.unsqueeze(2)],
+                dim=2,
             )
         else:
             temporal_data_merged = temporal_data
@@ -260,7 +262,10 @@ class TimeSeriesModel(nn.Module):
             outcome_t = outcome_t.long()
 
         return self._train(
-            static_data_t, temporal_data_t, temporal_horizons_t, outcome_t
+            static_data_t,
+            temporal_data_t,
+            temporal_horizons_t,
+            outcome_t,
         )
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
@@ -275,7 +280,10 @@ class TimeSeriesModel(nn.Module):
         prev_error = np.inf
 
         train_loader, test_dataloader = self.dataloader(
-            static_data, temporal_data, temporal_horizons, outcome
+            static_data,
+            temporal_data,
+            temporal_horizons,
+            outcome,
         )
         # training and testing
         for it in range(self.n_iter):
@@ -283,7 +291,7 @@ class TimeSeriesModel(nn.Module):
             if it % self.n_iter_print == 0:
                 val_loss = self._test_epoch(test_dataloader)
                 log.info(
-                    f"Epoch:{it}| train loss: {train_loss}, validation loss: {val_loss}"
+                    f"Epoch:{it}| train loss: {train_loss}, validation loss: {val_loss}",
                 )
                 if val_loss < prev_error:
                     patience = 0
@@ -372,7 +380,7 @@ class TimeSeriesModel(nn.Module):
         sampler = self.dataloader_sampler
         if sampler is None and self.task_type == "classification":
             sampler = ImbalancedDatasetSampler(
-                outcome_train.squeeze().cpu().numpy().tolist()
+                outcome_train.squeeze().cpu().numpy().tolist(),
             )
 
         return (
@@ -584,7 +592,9 @@ class TimeSeriesLayer(nn.Module):
         self.out.to(device)
 
     def forward(
-        self, static_data: torch.Tensor, temporal_data: torch.Tensor
+        self,
+        static_data: torch.Tensor,
+        temporal_data: torch.Tensor,
     ) -> torch.Tensor:
         if self.mode in ["RNN", "LSTM", "GRU"]:
             X_interm, _ = self.temporal_layer(temporal_data)
@@ -637,12 +647,15 @@ class WindowLinearLayer(nn.Module):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def forward(
-        self, static_data: torch.Tensor, temporal_data: torch.Tensor
+        self,
+        static_data: torch.Tensor,
+        temporal_data: torch.Tensor,
     ) -> torch.Tensor:
         assert len(static_data) == len(temporal_data)
         batch_size, seq_len, n_feats = temporal_data.shape
         temporal_batch = temporal_data[:, seq_len - self.window_size :, :].reshape(
-            batch_size, n_feats * self.window_size
+            batch_size,
+            n_feats * self.window_size,
         )
         batch = torch.cat([static_data, temporal_batch], axis=1)
 

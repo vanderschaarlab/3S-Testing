@@ -123,7 +123,7 @@ class ConditionalTimeGANPlugin(Plugin):
         gamma_penalty: float = 1,
         moments_penalty: float = 100,
         embedding_penalty: float = 10,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -173,7 +173,10 @@ class ConditionalTimeGANPlugin(Plugin):
         return TimeGANPlugin.hyperparameter_space()
 
     def _fit(
-        self, X: DataLoader, *args: Any, **kwargs: Any
+        self,
+        X: DataLoader,
+        *args: Any,
+        **kwargs: Any,
     ) -> "ConditionalTimeGANPlugin":
         assert X.type() in ["time_series", "time_series_survival"]
 
@@ -186,7 +189,8 @@ class ConditionalTimeGANPlugin(Plugin):
 
         self.conditional = TimeSeriesBinEncoder().fit_transform(
             pd.concat(
-                [static.reset_index(drop=True), outcome.reset_index(drop=True)], axis=1
+                [static.reset_index(drop=True), outcome.reset_index(drop=True)],
+                axis=1,
             ),
             temporal,
             temporal_horizons,

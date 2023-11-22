@@ -77,18 +77,18 @@ def evaluate_model(
             continue
 
         local_results["te_err_l1_ood"].append(
-            expected_time_error(T_test, E_test, ood_preds, metric="l1")
+            expected_time_error(T_test, E_test, ood_preds, metric="l1"),
         )
         local_results["te_err_l2_ood"].append(
-            expected_time_error(T_test, E_test, ood_preds, metric="l2")
+            expected_time_error(T_test, E_test, ood_preds, metric="l2"),
         )
         local_results["c_index_ood"].append(c_index(T_test, E_test, ood_preds))
 
         local_results["te_err_l1_id"].append(
-            expected_time_error(T_train, E_train, id_preds, metric="l1")
+            expected_time_error(T_train, E_train, id_preds, metric="l1"),
         )
         local_results["te_err_l2_id"].append(
-            expected_time_error(T_train, E_train, id_preds, metric="l2")
+            expected_time_error(T_train, E_train, id_preds, metric="l2"),
         )
         local_results["c_index_id"].append(c_index(T_train, E_train, id_preds))
 
@@ -107,11 +107,15 @@ def _trial_params(trial: optuna.Trial, param_space: List) -> Dict:
     for param in param_space:
         if hasattr(param, "choices"):
             out[param.name] = trial.suggest_categorical(
-                param.name, choices=param.choices
+                param.name,
+                choices=param.choices,
             )
         elif hasattr(param, "step"):
             out[param.name] = trial.suggest_int(
-                param.name, param.low, param.high, param.step
+                param.name,
+                param.low,
+                param.high,
+                param.step,
             )
         else:
             out[param.name] = trial.suggest_float(param.name, param.low, param.high)
@@ -200,7 +204,7 @@ def select_uncensoring_model(
         score = study.best_trial.value
 
         log.info(
-            f"[select_uncensoring_model] model = {model} {metric} = {score} duration = {round(time() - start, 4)} s"
+            f"[select_uncensoring_model] model = {model} {metric} = {score} duration = {round(time() - start, 4)} s",
         )
         if score > candidate["score"]:
             candidate = {

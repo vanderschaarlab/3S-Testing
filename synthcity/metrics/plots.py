@@ -18,7 +18,10 @@ LABELS = ["real", "syn"]
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def plot_marginal_comparison(
-    plt: Any, X_gt: DataLoader, X_syn: DataLoader, normalize: bool = True
+    plt: Any,
+    X_gt: DataLoader,
+    X_syn: DataLoader,
+    normalize: bool = True,
 ) -> None:
     evaluator = JensenShannonDistance(n_histogram_bins=10)
     stats_, stats_gt, stats_syn = evaluator._evaluate_stats(X_gt, X_syn)
@@ -27,7 +30,9 @@ def plot_marginal_comparison(
     plots_cnt = len(column_names)
     row_len = 2
     fig, ax = plt.subplots(
-        int(np.ceil(plots_cnt / row_len)), row_len, figsize=(14, plots_cnt * 3)
+        int(np.ceil(plots_cnt / row_len)),
+        row_len,
+        figsize=(14, plots_cnt * 3),
     )
     fig.subplots_adjust(hspace=1)
     if plots_cnt % row_len != 0:
@@ -89,7 +94,8 @@ def plot_associations_comparison(
     nominal_columns: str = "auto",
 ) -> None:
     evaluator = FeatureCorrelation(
-        nom_nom_assoc=nom_nom_assoc, nominal_columns=nominal_columns
+        nom_nom_assoc=nom_nom_assoc,
+        nominal_columns=nominal_columns,
     )
     stats_gt, stats_syn = evaluator._evaluate_stats(X_gt, X_syn)
     pcd = evaluator.evaluate(X_gt, X_syn)["joint"]
@@ -131,7 +137,7 @@ def plot_associations_comparison(
         cbar_kws={"shrink": 0.8},
     )
     ax[1].set_title(
-        LABELS[1] + "\n" + "pairwise correlation distance: {}".format(round(pcd, 4))
+        LABELS[1] + "\n" + "pairwise correlation distance: {}".format(round(pcd, 4)),
     )
 
     cbar = heatmap_original.collections[0].colorbar

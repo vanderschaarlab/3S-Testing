@@ -39,7 +39,7 @@ class DeephitTimeToEvent(TimeToEventPlugin):
         patience: int = 20,
         batch_norm: bool = False,
         device: Any = DEVICE,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -67,7 +67,10 @@ class DeephitTimeToEvent(TimeToEventPlugin):
         T = np.asarray(T).astype(int)
 
         X_train, X_val, E_train, E_val, T_train, T_val = train_test_split(
-            X, E, T, random_state=42
+            X,
+            E,
+            T,
+            random_state=42,
         )
 
         def get_target(df: Any) -> Tuple:

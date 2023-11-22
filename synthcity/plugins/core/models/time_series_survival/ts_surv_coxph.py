@@ -87,7 +87,9 @@ class CoxTimeSeriesSurvival(TimeSeriesSurvivalPlugin):
 
         self.emb_model.fit(static, temporal, temporal_horizons, T, E)
         embeddings = self.emb_model.predict_emb(
-            static, temporal, temporal_horizons
+            static,
+            temporal,
+            temporal_horizons,
         ).reshape(len(T), -1)
         self.pred_model.fit(pd.DataFrame(embeddings), pd.Series(T), pd.Series(E))
 
@@ -104,7 +106,9 @@ class CoxTimeSeriesSurvival(TimeSeriesSurvivalPlugin):
         "Predict risk"
 
         embeddings = self.emb_model.predict_emb(
-            static, temporal, temporal_horizons
+            static,
+            temporal,
+            temporal_horizons,
         ).reshape(len(temporal), -1)
         return self.pred_model.predict(pd.DataFrame(embeddings), time_horizons)
 

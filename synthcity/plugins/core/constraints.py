@@ -38,7 +38,7 @@ class Constraints(BaseModel):
 
             if op not in supported_ops:
                 raise ValueError(
-                    f"Invalid operation {op}. Supported ops: {supported_ops}"
+                    f"Invalid operation {op}. Supported ops: {supported_ops}",
                 )
             if op in ["in"]:
                 assert isinstance(thresh, list)
@@ -78,7 +78,11 @@ class Constraints(BaseModel):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _correct(
-        self, X: pd.DataFrame, feature: str, op: str, operand: Any
+        self,
+        X: pd.DataFrame,
+        feature: str,
+        op: str,
+        operand: Any,
     ) -> pd.DataFrame:
         """Correct limits.
 

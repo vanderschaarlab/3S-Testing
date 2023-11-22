@@ -304,11 +304,11 @@ class TimeSeriesGAN(nn.Module):
                 cond = cond.reshape(-1, 1)
             if cond.shape[1] != self.n_units_conditional:
                 raise ValueError(
-                    f"Expecting conditional with n_units = {self.n_units_conditional}. Got {cond.shape}"
+                    f"Expecting conditional with n_units = {self.n_units_conditional}. Got {cond.shape}",
                 )
             if cond.shape[0] != static_data.shape[0]:
                 raise ValueError(
-                    "Expecting conditional with the same length as the dataset"
+                    "Expecting conditional with the same length as the dataset",
                 )
 
             condt = self._check_tensor(cond).float()
@@ -348,7 +348,10 @@ class TimeSeriesGAN(nn.Module):
             horizons_t = self._check_tensor(temporal_horizons).float()
 
         static, temporal, temporal_horizons = self(
-            count, condt, static_data=static_t, temporal_horizons=horizons_t
+            count,
+            condt,
+            static_data=static_t,
+            temporal_horizons=horizons_t,
         )
         return (
             static.detach().cpu().numpy(),
@@ -376,13 +379,15 @@ class TimeSeriesGAN(nn.Module):
 
         if cond is not None and len(cond) != count:
             raise ValueError(
-                f"cond length must match count Actual {len(cond)} Expected{count}"
+                f"cond length must match count Actual {len(cond)} Expected{count}",
             )
 
         # Static data
         if static_data is None:
             static_noise = torch.randn(
-                count, self.n_static_units_latent, device=self.device
+                count,
+                self.n_static_units_latent,
+                device=self.device,
             )
             static_noise = self._append_optional_cond(static_noise, cond)
             static_data = self.static_generator(static_noise)
@@ -402,17 +407,23 @@ class TimeSeriesGAN(nn.Module):
             )
 
             temporal_horizons = self.temporal_horizons_generator(
-                static_data_with_cond_and_temporal_noise
+                static_data_with_cond_and_temporal_noise,
             )
 
         temporal_latent_data = self.temporal_generator(
-            static_data_with_cond, temporal_noise, temporal_horizons
+            static_data_with_cond,
+            temporal_noise,
+            temporal_horizons,
         )
         fake_next_temporal_embeddings = self.temporal_supervisor(
-            static_data_with_cond, temporal_latent_data, temporal_horizons
+            static_data_with_cond,
+            temporal_latent_data,
+            temporal_horizons,
         )
         temporal_data = self.temporal_recovery(
-            static_data_with_cond, fake_next_temporal_embeddings, temporal_horizons
+            static_data_with_cond,
+            fake_next_temporal_embeddings,
+            temporal_horizons,
         )
 
         return static_data, temporal_data, temporal_horizons
@@ -452,7 +463,9 @@ class TimeSeriesGAN(nn.Module):
 
         # Prepare the fake batch
         static_noise = torch.randn(
-            batch_size, self.n_static_units_latent, device=self.device
+            batch_size,
+            self.n_static_units_latent,
+            device=self.device,
         )
         static_noise = self._append_optional_cond(static_noise, cond)
 
@@ -468,29 +481,40 @@ class TimeSeriesGAN(nn.Module):
         fake_static_data = self._append_optional_cond(fake_static_data, cond)
 
         fake_static_data_with_temporal_noise = self._append_optional_cond(
-            fake_static_data, temporal_noise.view(len(fake_static_data), -1)
+            fake_static_data,
+            temporal_noise.view(len(fake_static_data), -1),
         )
         fake_temporal_horizons = self.temporal_horizons_generator(
-            fake_static_data_with_temporal_noise
+            fake_static_data_with_temporal_noise,
         )
 
         # Embedder & Recovery
         temporal_embeddings = self.temporal_embedder(
-            real_static_data, temporal_data, real_temporal_horizons
+            real_static_data,
+            temporal_data,
+            real_temporal_horizons,
         )
         recovered_temporal_data = self.temporal_recovery(
-            real_static_data, temporal_embeddings, real_temporal_horizons
+            real_static_data,
+            temporal_embeddings,
+            real_temporal_horizons,
         )
 
         # Generator
         temporal_latent_data = self.temporal_generator(
-            fake_static_data, temporal_noise, fake_temporal_horizons
+            fake_static_data,
+            temporal_noise,
+            fake_temporal_horizons,
         )
         fake_next_temporal_embeddings = self.temporal_supervisor(
-            fake_static_data, temporal_latent_data, fake_temporal_horizons
+            fake_static_data,
+            temporal_latent_data,
+            fake_temporal_horizons,
         )
         next_temporal_embeddings = self.temporal_supervisor(
-            fake_static_data, temporal_embeddings, fake_temporal_horizons
+            fake_static_data,
+            temporal_embeddings,
+            fake_temporal_horizons,
         )
 
         # Synthetic data
@@ -507,10 +531,14 @@ class TimeSeriesGAN(nn.Module):
             fake_temporal_horizons,
         ).squeeze()
         outcome_real = self.discriminator(
-            real_static_data, temporal_embeddings, real_temporal_horizons
+            real_static_data,
+            temporal_embeddings,
+            real_temporal_horizons,
         ).squeeze()
         outcome_latent = self.discriminator(
-            fake_static_data, temporal_latent_data, fake_temporal_horizons
+            fake_static_data,
+            temporal_latent_data,
+            fake_temporal_horizons,
         ).squeeze()
         horizons_d_fake = self.discriminator_horizons(fake_temporal_horizons).squeeze()
         horizons_d_real = self.discriminator_horizons(real_temporal_horizons).squeeze()
@@ -560,12 +588,16 @@ class TimeSeriesGAN(nn.Module):
             _,
             _,
         ) = self._train_epoch_all_models(
-            static_data, temporal_data, temporal_horizons, cond
+            static_data,
+            temporal_data,
+            temporal_horizons,
+            cond,
         )
 
         # Embedder network loss
         errG_supervised = nn.MSELoss()(
-            temporal_embeddings[:, 1:, :], next_temporal_embeddings[:, :-1, :]
+            temporal_embeddings[:, 1:, :],
+            next_temporal_embeddings[:, :-1, :],
         )
 
         errE_mse = nn.MSELoss()(temporal_data, recovered_temporal_data)
@@ -616,7 +648,10 @@ class TimeSeriesGAN(nn.Module):
             horizons_d_fake,
             horizons_d_real,
         ) = self._train_epoch_all_models(
-            static_data, temporal_data, temporal_horizons, cond
+            static_data,
+            temporal_data,
+            temporal_horizons,
+            cond,
         )
 
         fake_labels = torch.ones(len(temporal_data)).to(self.device).squeeze()
@@ -629,18 +664,21 @@ class TimeSeriesGAN(nn.Module):
 
         # 2. Supervised loss
         errG_supervised = nn.MSELoss()(
-            temporal_embeddings[:, 1:, :], next_temporal_embeddings[:, :-1, :]
+            temporal_embeddings[:, 1:, :],
+            next_temporal_embeddings[:, :-1, :],
         )
 
         # 3. Two Momments
 
         fake_temporal_data_var, fake_temporal_data_mean = torch.var_mean(
-            fake_temporal_data, 0
+            fake_temporal_data,
+            0,
         )
         temporal_var, temporal_mean = torch.var_mean(temporal_data, 0)
 
         errG_l1_var = nn.L1Loss()(
-            torch.sqrt(fake_temporal_data_var + 1e-6), torch.sqrt(temporal_var + 1e-6)
+            torch.sqrt(fake_temporal_data_var + 1e-6),
+            torch.sqrt(temporal_var + 1e-6),
         )
         errG_l1_mean = nn.L1Loss()(fake_temporal_data_mean, temporal_mean)
         errG_l1_moments = errG_l1_var + errG_l1_mean
@@ -693,7 +731,10 @@ class TimeSeriesGAN(nn.Module):
             horizons_d_fake,
             horizons_d_real,
         ) = self._train_epoch_all_models(
-            static_data, temporal_data, temporal_horizons, cond
+            static_data,
+            temporal_data,
+            temporal_horizons,
+            cond,
         )
 
         real_labels = torch.ones(len(temporal_data)).to(self.device).squeeze()
@@ -745,7 +786,7 @@ class TimeSeriesGAN(nn.Module):
                     temporal_data,
                     temporal_horizons,
                     cond,
-                )
+                ),
             )
             D_losses.append(
                 self._train_epoch_discriminator(
@@ -753,7 +794,7 @@ class TimeSeriesGAN(nn.Module):
                     temporal_data,
                     temporal_horizons,
                     cond,
-                )
+                ),
             )
             G_losses.append(
                 self._train_epoch_generator(
@@ -761,7 +802,7 @@ class TimeSeriesGAN(nn.Module):
                     temporal_data,
                     temporal_horizons,
                     cond,
-                )
+                ),
             )
 
         return np.mean(E_losses), np.mean(G_losses), np.mean(D_losses)
@@ -789,7 +830,7 @@ class TimeSeriesGAN(nn.Module):
             # Check how the generator is doing by saving G's output on fixed_noise
             if (i + 1) % self.n_iter_print == 0:
                 log.debug(
-                    f"[{i}/{self.generator_n_iter}]\tLoss_D: {d_loss}\tLoss_G: {g_loss}\t Loss_E: {e_loss}"
+                    f"[{i}/{self.generator_n_iter}]\tLoss_D: {d_loss}\tLoss_G: {g_loss}\t Loss_E: {e_loss}",
                 )
 
         return self
@@ -801,7 +842,9 @@ class TimeSeriesGAN(nn.Module):
             return torch.from_numpy(np.asarray(X)).to(self.device)
 
     def _append_optional_cond(
-        self, X: torch.Tensor, cond: Optional[torch.Tensor]
+        self,
+        X: torch.Tensor,
+        cond: Optional[torch.Tensor],
     ) -> torch.Tensor:
         if cond is None:
             return X

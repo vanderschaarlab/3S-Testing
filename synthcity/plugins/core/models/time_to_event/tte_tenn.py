@@ -130,7 +130,10 @@ class TimeEventNN(nn.Module):
         return self.generator(X)
 
     def dataloader(
-        self, X: torch.Tensor, T: torch.Tensor, E: torch.Tensor
+        self,
+        X: torch.Tensor,
+        T: torch.Tensor,
+        E: torch.Tensor,
     ) -> Tuple[DataLoader, TensorDataset]:
         X_train, X_val, T_train, T_val, E_train, E_val = train_test_split(
             X.cpu(),
@@ -154,7 +157,10 @@ class TimeEventNN(nn.Module):
         sampler = ImbalancedDatasetSampler(E_train.cpu().numpy().tolist())
 
         return DataLoader(
-            train_dataset, batch_size=self.batch_size, sampler=sampler, pin_memory=False
+            train_dataset,
+            batch_size=self.batch_size,
+            sampler=sampler,
+            pin_memory=False,
         ), DataLoader(val_dataset, batch_size=len(val_dataset), pin_memory=False)
 
     def _train_epoch_generator(
@@ -168,7 +174,8 @@ class TimeEventNN(nn.Module):
 
         # Calculate G's loss based on noncensored data
         errG_nc = self._loss_regression_nc(
-            X[E == 1], T[E == 1]
+            X[E == 1],
+            T[E == 1],
         ) + self._loss_calibration(X[E == 1], T[E == 1])
 
         # Calculate G's loss based on censored data
@@ -186,7 +193,8 @@ class TimeEventNN(nn.Module):
         # Update G
         if self.clipping_value > 0:
             torch.nn.utils.clip_grad_norm_(
-                self.generator.parameters(), self.clipping_value
+                self.generator.parameters(),
+                self.clipping_value,
             )
         self.generator.optimizer.step()
 
@@ -211,7 +219,7 @@ class TimeEventNN(nn.Module):
                     Xmb,
                     Tmb,
                     Emb,
-                )
+                ),
             )
 
         return np.mean(G_losses)
@@ -258,12 +266,12 @@ class TimeEventNN(nn.Module):
 
                     if patience > self.patience:
                         log.debug(
-                            f"No improvement for {patience} iterations. stopping..."
+                            f"No improvement for {patience} iterations. stopping...",
                         )
                         break
 
                 log.debug(
-                    f"[{i}/{self.n_iter}]\tTrain loss: {g_loss} C-Index val: {c_index_val} Expected time err: {exp_err_val}"
+                    f"[{i}/{self.n_iter}]\tTrain loss: {g_loss} C-Index val: {c_index_val} Expected time err: {exp_err_val}",
                 )
 
         return self
@@ -316,7 +324,7 @@ class TimeEventNN(nn.Module):
             lhs = arr.view(-1, 1).repeat(1, len(arr_event))
 
             return nn.ReLU()(
-                lhs - arr_event
+                lhs - arr_event,
             )  # we only want the points after each event, not before
 
         inner_T_dist = _inner_dist(T)
@@ -362,7 +370,7 @@ class TimeEventNN(nn.Module):
         fake_T = self.generator(X)
 
         errG_cen = torch.mean(
-            nn.ReLU()(T - fake_T)
+            nn.ReLU()(T - fake_T),
         )  # fake_T should be >= T for censored data
 
         assert not torch.isnan(errG_cen), "Censored regression loss fail"
@@ -381,7 +389,8 @@ class TimeEventNN(nn.Module):
         fake_T = self.generator(X).squeeze()
 
         errG_noncen = nn.MSELoss()(
-            fake_T, T
+            fake_T,
+            T,
         )  # fake_T should be == T for noncensored data
 
         assert not torch.isnan(errG_noncen), "Observed regression loss fail"
@@ -390,7 +399,9 @@ class TimeEventNN(nn.Module):
 
 class TENNTimeToEvent(TimeToEventPlugin):
     def __init__(
-        self, model_search_n_iter: Optional[int] = None, **kwargs: Any
+        self,
+        model_search_n_iter: Optional[int] = None,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 

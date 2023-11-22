@@ -12,7 +12,10 @@ from .surv_xgb import XGBSurvivalAnalysis
 
 
 def generate_dataset_for_horizon(
-    X: pd.DataFrame, T: pd.DataFrame, Y: pd.DataFrame, horizon_days: int
+    X: pd.DataFrame,
+    T: pd.DataFrame,
+    Y: pd.DataFrame,
+    horizon_days: int,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Generate the dataset at a certain time horizon. Useful for classifiers.

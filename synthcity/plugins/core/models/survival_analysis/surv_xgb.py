@@ -92,7 +92,10 @@ class XGBSurvivalAnalysis(SurvivalAnalysisPlugin):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def fit(
-        self, X: pd.DataFrame, T: pd.Series, Y: pd.Series
+        self,
+        X: pd.DataFrame,
+        T: pd.Series,
+        Y: pd.Series,
     ) -> "SurvivalAnalysisPlugin":
         "Training logic"
 
@@ -132,7 +135,9 @@ class XGBSurvivalAnalysis(SurvivalAnalysisPlugin):
                 local_preds_[:, t] = np.asarray(1 - surv[nearest])
             preds_.append(local_preds_)
         return pd.DataFrame(
-            np.concatenate(preds_, axis=0), columns=time_horizons, index=X.index
+            np.concatenate(preds_, axis=0),
+            columns=time_horizons,
+            index=X.index,
         )
 
     @staticmethod
@@ -146,7 +151,8 @@ class XGBSurvivalAnalysis(SurvivalAnalysisPlugin):
             IntegerDistribution(name="min_child_weight", low=0, high=50),
             CategoricalDistribution(name="objective", choices=["aft", "cox"]),
             CategoricalDistribution(
-                name="strategy", choices=["weibull", "debiased_bce", "km"]
+                name="strategy",
+                choices=["weibull", "debiased_bce", "km"],
             ),
             FloatDistribution(name="reg_lambda", low=1e-3, high=10.0),
             FloatDistribution(name="reg_alpha", low=1e-3, high=10.0),
@@ -157,6 +163,8 @@ class XGBSurvivalAnalysis(SurvivalAnalysisPlugin):
             FloatDistribution(name="learning_rate", low=1e-4, high=1e-2),
             IntegerDistribution(name="max_bin", low=256, high=512),
             IntegerDistribution(
-                name="booster", low=0, high=len(XGBSurvivalAnalysis.booster) - 1
+                name="booster",
+                low=0,
+                high=len(XGBSurvivalAnalysis.booster) - 1,
             ),
         ]

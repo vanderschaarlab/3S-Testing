@@ -31,7 +31,7 @@ class TSSurvivalFunctionTimeToEvent(TimeToEventPlugin):
         dropout: float = 0,
         lr: float = 1e-3,
         patience: int = 20,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -79,16 +79,23 @@ class TSSurvivalFunctionTimeToEvent(TimeToEventPlugin):
         self.model.fit(static, temporal, temporal_horizons, T, E)
 
         self.time_horizons = np.linspace(
-            T.min(), T.max(), self.time_points, dtype=int
+            T.min(),
+            T.max(),
+            self.time_points,
+            dtype=int,
         ).tolist()
 
         surv_fn = self.model.predict(
-            static, temporal, temporal_horizons, time_horizons=self.time_horizons
+            static,
+            temporal,
+            temporal_horizons,
+            time_horizons=self.time_horizons,
         )
         surv_fn = surv_fn.loc[:, ~surv_fn.columns.duplicated()]
 
         data = np.concatenate(
-            [static, surv_fn.values, np.expand_dims(E, axis=1)], axis=1
+            [static, surv_fn.values, np.expand_dims(E, axis=1)],
+            axis=1,
         )
 
         Tlog = np.log(T + 1e-8)
@@ -113,7 +120,10 @@ class TSSurvivalFunctionTimeToEvent(TimeToEventPlugin):
     ) -> pd.Series:
         "Predict time-to-event"
         return self.predict_any(
-            static, temporal, temporal_horizons, np.ones(len(temporal))
+            static,
+            temporal,
+            temporal_horizons,
+            np.ones(len(temporal)),
         )
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
@@ -127,16 +137,20 @@ class TSSurvivalFunctionTimeToEvent(TimeToEventPlugin):
         "Predict time-to-event or censoring"
 
         surv_fn = self.model.predict(
-            static, temporal, temporal_horizons, time_horizons=self.time_horizons
+            static,
+            temporal,
+            temporal_horizons,
+            time_horizons=self.time_horizons,
         )
         surv_fn = surv_fn.loc[:, ~surv_fn.columns.duplicated()]
 
         data = np.concatenate(
-            [static, surv_fn.values, np.expand_dims(E, axis=1)], axis=1
+            [static, surv_fn.values, np.expand_dims(E, axis=1)],
+            axis=1,
         )
 
         return np.exp(
-            self.tte_regressor.predict(data, temporal, temporal_horizons)
+            self.tte_regressor.predict(data, temporal, temporal_horizons),
         ).squeeze()
 
     @staticmethod

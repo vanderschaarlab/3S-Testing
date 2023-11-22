@@ -1,10 +1,10 @@
-
 from ctgan.synthesizers.ctgan import CTGANSynthesizer
+
 
 def fit_ctgan(data, epochs, learning_rate, embedding_dim, seed, discrete_columns):
     """
     Fits a CTGAN model to synthetic data using the provided parameters.
-    
+
     Args:
       data: The data parameter is the input dataset that you want to use for training the CTGAN model.
     It should be a pandas DataFrame or a numpy array.
@@ -23,18 +23,29 @@ def fit_ctgan(data, epochs, learning_rate, embedding_dim, seed, discrete_columns
     represent discrete or categorical variables in your dataset. These variables will be treated
     differently during the training process to ensure that the generated synthetic data preserves the
     distribution of these variables.
-    
+
     Returns:
       the trained CTGANSynthesizer model.
     """
-    
 
-    syn_model = CTGANSynthesizer(embedding_dim=embedding_dim, generator_dim=(256, 256), discriminator_dim=(256, 256),
-                    generator_lr=learning_rate, generator_decay=1e-6, discriminator_lr=learning_rate,
-                    discriminator_decay=1e-6, batch_size=500, discriminator_steps=1,
-                    log_frequency=True, verbose=False, epochs=epochs, pac=10, cuda=True)
+    syn_model = CTGANSynthesizer(
+        embedding_dim=embedding_dim,
+        generator_dim=(256, 256),
+        discriminator_dim=(256, 256),
+        generator_lr=learning_rate,
+        generator_decay=1e-6,
+        discriminator_lr=learning_rate,
+        discriminator_decay=1e-6,
+        batch_size=500,
+        discriminator_steps=1,
+        log_frequency=True,
+        verbose=False,
+        epochs=epochs,
+        pac=10,
+        cuda=True,
+    )
 
     syn_model.set_random_state(seed)
     syn_model.fit(train_data=data, discrete_columns=discrete_columns)
 
-    return syn_model 
+    return syn_model

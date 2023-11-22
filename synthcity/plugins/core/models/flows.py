@@ -187,25 +187,26 @@ class NormalizingFlows(nn.Module):
                 [
                     RandomPermutation(features=features),
                     LULinear(features, identity_init=True),
-                ]
+                ],
             )
         elif self.linear_transform_type == "svd":
             return CompositeTransform(
                 [
                     RandomPermutation(features=features),
                     SVDLinear(features, num_householder=10, identity_init=True),
-                ]
+                ],
             )
         else:
             raise ValueError(
-                f"Unknown linear transform type {self.linear_transform_type}"
+                f"Unknown linear transform type {self.linear_transform_type}",
             )
 
     def _create_base_transform(self, layer_idx: int, features: int) -> Any:
         if self.base_transform_type == "affine-coupling":
             return AffineCouplingTransform(
                 mask=create_alternating_binary_mask(
-                    features, even=(layer_idx % 2 == 0)
+                    features,
+                    even=(layer_idx % 2 == 0),
                 ),
                 transform_net_create_fn=lambda in_features, out_features: ResidualNet(
                     in_features=in_features,
@@ -220,7 +221,8 @@ class NormalizingFlows(nn.Module):
         elif self.base_transform_type == "quadratic-coupling":
             return PiecewiseQuadraticCouplingTransform(
                 mask=create_alternating_binary_mask(
-                    features, even=(layer_idx % 2 == 0)
+                    features,
+                    even=(layer_idx % 2 == 0),
                 ),
                 transform_net_create_fn=lambda in_features, out_features: ResidualNet(
                     in_features=in_features,
@@ -239,7 +241,8 @@ class NormalizingFlows(nn.Module):
         elif self.base_transform_type == "rq-coupling":
             return PiecewiseRationalQuadraticCouplingTransform(
                 mask=create_alternating_binary_mask(
-                    features, even=(layer_idx % 2 == 0)
+                    features,
+                    even=(layer_idx % 2 == 0),
                 ),
                 transform_net_create_fn=lambda in_features, out_features: ResidualNet(
                     in_features=in_features,
@@ -304,10 +307,10 @@ class NormalizingFlows(nn.Module):
                     [
                         self._create_linear_transform(features),
                         self._create_base_transform(layer_idx, features),
-                    ]
+                    ],
                 )
                 for layer_idx in range(self.n_layers_hidden)
             ]
-            + [self._create_linear_transform(features)]
+            + [self._create_linear_transform(features)],
         )
         return transform

@@ -97,7 +97,9 @@ class PBCDataloader:
         )
 
         x_ = pd.DataFrame(
-            StandardScaler().fit_transform(x), columns=x.columns, index=data.index
+            StandardScaler().fit_transform(x),
+            columns=x.columns,
+            index=data.index,
         )
 
         x_static, x_temporal, t, e = [], [], [], []

@@ -22,7 +22,7 @@ class SurvivalFunctionTimeToEvent(TimeToEventPlugin):
         time_points: int = 100,
         model_search_n_iter: Optional[int] = None,
         device: Any = DEVICE,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -38,7 +38,10 @@ class SurvivalFunctionTimeToEvent(TimeToEventPlugin):
         self.model.fit(X, T, Y)
 
         self.time_horizons = np.linspace(
-            T.min(), T.max(), self.time_points, dtype=int
+            T.min(),
+            T.max(),
+            self.time_points,
+            dtype=int,
         ).tolist()
 
         surv_fn = self.model.predict(X, time_horizons=self.time_horizons)

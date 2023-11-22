@@ -210,13 +210,18 @@ class TimeSeriesDecoder(nn.Module):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def forward(
-        self, static_embs: Tensor, temporal_embs: Tensor, horizon_embs: Tensor
+        self,
+        static_embs: Tensor,
+        temporal_embs: Tensor,
+        horizon_embs: Tensor,
     ) -> Tensor:
         static_decoded = self.static_decoder(static_embs)
         temporal_horizons = self.horizons_decoder(horizon_embs)
 
         temporal_decoded = self.temporal_decoder(
-            static_decoded, temporal_embs, temporal_horizons
+            static_decoded,
+            temporal_embs,
+            temporal_horizons,
         )
         return static_decoded, temporal_decoded, temporal_horizons
 
@@ -313,7 +318,10 @@ class TimeSeriesAutoEncoder(nn.Module):
         ).to(device)
 
     def fit(
-        self, static: np.ndarray, temporal: np.ndarray, temporal_horizons: np.ndarray
+        self,
+        static: np.ndarray,
+        temporal: np.ndarray,
+        temporal_horizons: np.ndarray,
     ) -> Any:
         static_t = self._check_tensor(static).float()
         temporal_t = self._check_tensor(temporal).float()
@@ -334,10 +342,14 @@ class TimeSeriesAutoEncoder(nn.Module):
         horizons = []
         for _ in range(steps):
             static_noise = torch.randn(
-                self.batch_size, self.n_static_units_embedding, device=self.device
+                self.batch_size,
+                self.n_static_units_embedding,
+                device=self.device,
             )
             horizons_noise = torch.randn(
-                self.batch_size, self.n_temporal_units_embedding, device=self.device
+                self.batch_size,
+                self.n_temporal_units_embedding,
+                device=self.device,
             )
             temporal_noise = torch.randn(
                 self.batch_size,
@@ -347,7 +359,9 @@ class TimeSeriesAutoEncoder(nn.Module):
             )
 
             static_gen, temporal_gen, horizons_gen = self.decoder(
-                static_noise, temporal_noise, horizons_noise
+                static_noise,
+                temporal_noise,
+                horizons_noise,
             )
 
             static_data.append(static_gen.detach().cpu().numpy())
@@ -376,7 +390,10 @@ class TimeSeriesAutoEncoder(nn.Module):
         return eps * std + mu
 
     def _train_step(
-        self, static: Tensor, temporal: Tensor, temporal_horizons: Tensor
+        self,
+        static: Tensor,
+        temporal: Tensor,
+        temporal_horizons: Tensor,
     ) -> Tensor:
         # Encode
         (
@@ -393,11 +410,17 @@ class TimeSeriesAutoEncoder(nn.Module):
 
         # Decode
         static_recon, temporal_recon, horizons_recon = self.decoder(
-            static_embedding, temporal_embedding, horizons_embedding
+            static_embedding,
+            temporal_embedding,
+            horizons_embedding,
         )
 
         static_loss = self._loss_function(
-            static_recon, static, static_mu, static_logvar, self.static_nonlin_out
+            static_recon,
+            static,
+            static_mu,
+            static_logvar,
+            self.static_nonlin_out,
         )
         temporal_loss = self._loss_function(
             temporal_recon,
@@ -407,7 +430,10 @@ class TimeSeriesAutoEncoder(nn.Module):
             self.temporal_nonlin_out,
         )
         horizons_loss = self._loss_function(
-            horizons_recon, temporal_horizons, horizons_mu, horizons_logvar
+            horizons_recon,
+            temporal_horizons,
+            horizons_mu,
+            horizons_logvar,
         )
 
         loss = static_loss + temporal_loss + horizons_loss
@@ -420,7 +446,10 @@ class TimeSeriesAutoEncoder(nn.Module):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _train(
-        self, static: Tensor, temporal: Tensor, temporal_horizons: Tensor
+        self,
+        static: Tensor,
+        temporal: Tensor,
+        temporal_horizons: Tensor,
     ) -> Any:
         loader = self._dataloader(static, temporal, temporal_horizons)
 
@@ -452,7 +481,10 @@ class TimeSeriesAutoEncoder(nn.Module):
             return torch.from_numpy(np.asarray(X)).to(self.device)
 
     def _dataloader(
-        self, static: Tensor, temporal: Tensor, temporal_horizons: Tensor
+        self,
+        static: Tensor,
+        temporal: Tensor,
+        temporal_horizons: Tensor,
     ) -> DataLoader:
         dataset = TensorDataset(static, temporal, temporal_horizons)
         return DataLoader(
@@ -481,7 +513,9 @@ class TimeSeriesAutoEncoder(nn.Module):
                     recon_slice = reconstructed[..., step:step_end]
                     if len(recon_slice.shape) == 3:
                         recon_slice = recon_slice.permute(
-                            0, 2, 1
+                            0,
+                            2,
+                            1,
                         )  # batches, classes, len
                     discr_loss = nn.functional.cross_entropy(
                         recon_slice,
@@ -490,14 +524,15 @@ class TimeSeriesAutoEncoder(nn.Module):
                     loss.append(discr_loss)
                 else:
                     cont_loss = nn.functional.mse_loss(
-                        reconstructed[..., step:step_end], real[..., step:step_end]
+                        reconstructed[..., step:step_end],
+                        real[..., step:step_end],
                     )
                     loss.append(cont_loss)
                 step = step_end
 
             if step != reconstructed.size()[-1]:
                 raise RuntimeError(
-                    f"Invalid reconstructed features. Expected {step}, got {reconstructed.shape}"
+                    f"Invalid reconstructed features. Expected {step}, got {reconstructed.shape}",
                 )
 
             reconstruction_loss = torch.sum(torch.FloatTensor(loss))

@@ -9,7 +9,8 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from ctgan.data_transformer import DataTransformer
 from ctgan.synthesizers.base import BaseSynthesizer, random_state
-from ctgan.synthesizers.offsets import SBO, GHO
+from ctgan.synthesizers.offsets import GHO, SBO
+
 
 class Encoder(Module):
     """Encoder for the TVAESynthesizer.
@@ -28,10 +29,7 @@ class Encoder(Module):
         dim = data_dim
         seq = []
         for item in list(compress_dims):
-            seq += [
-                Linear(dim, item),
-                ReLU()
-            ]
+            seq += [Linear(dim, item), ReLU()]
             dim = item
 
         self.seq = Sequential(*seq)
@@ -81,18 +79,23 @@ def _loss_function(recon_x, x, sigmas, mu, logvar, output_info, factor):
     loss = []
     for column_info in output_info:
         for span_info in column_info:
-            if span_info.activation_fn != 'softmax':
+            if span_info.activation_fn != "softmax":
                 ed = st + span_info.dim
                 std = sigmas[st]
                 eq = x[:, st] - torch.tanh(recon_x[:, st])
-                loss.append((eq ** 2 / 2 / (std ** 2)).sum())
+                loss.append((eq**2 / 2 / (std**2)).sum())
                 loss.append(torch.log(std) * x.size()[0])
                 st = ed
 
             else:
                 ed = st + span_info.dim
-                loss.append(cross_entropy(
-                    recon_x[:, st:ed], torch.argmax(x[:, st:ed], dim=-1), reduction='sum'))
+                loss.append(
+                    cross_entropy(
+                        recon_x[:, st:ed],
+                        torch.argmax(x[:, st:ed], dim=-1),
+                        reduction="sum",
+                    ),
+                )
                 st = ed
 
     assert st == recon_x.size()[1]
@@ -112,7 +115,7 @@ class TVAESynthesizer(BaseSynthesizer):
         batch_size=500,
         epochs=300,
         loss_factor=2,
-        cuda=True
+        cuda=True,
     ):
 
         self.embedding_dim = embedding_dim
@@ -125,11 +128,11 @@ class TVAESynthesizer(BaseSynthesizer):
         self.epochs = epochs
 
         if not cuda or not torch.cuda.is_available():
-            device = 'cpu'
+            device = "cpu"
         elif isinstance(cuda, str):
             device = cuda
         else:
-            device = 'cuda'
+            device = "cuda"
 
         self._device = torch.device(device)
 
@@ -149,15 +152,27 @@ class TVAESynthesizer(BaseSynthesizer):
         self.transformer = DataTransformer()
         self.transformer.fit(train_data, discrete_columns)
         train_data = self.transformer.transform(train_data)
-        dataset = TensorDataset(torch.from_numpy(train_data.astype('float32')).to(self._device))
-        loader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True, drop_last=False)
+        dataset = TensorDataset(
+            torch.from_numpy(train_data.astype("float32")).to(self._device),
+        )
+        loader = DataLoader(
+            dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            drop_last=False,
+        )
 
         data_dim = self.transformer.output_dimensions
-        encoder = Encoder(data_dim, self.compress_dims, self.embedding_dim).to(self._device)
-        self.decoder = Decoder(self.embedding_dim, self.decompress_dims, data_dim).to(self._device)
+        encoder = Encoder(data_dim, self.compress_dims, self.embedding_dim).to(
+            self._device,
+        )
+        self.decoder = Decoder(self.embedding_dim, self.decompress_dims, data_dim).to(
+            self._device,
+        )
         optimizerAE = Adam(
             list(encoder.parameters()) + list(self.decoder.parameters()),
-            weight_decay=self.l2scale)
+            weight_decay=self.l2scale,
+        )
 
         for i in range(self.epochs):
             for id_, data in enumerate(loader):
@@ -168,8 +183,13 @@ class TVAESynthesizer(BaseSynthesizer):
                 emb = eps * std + mu
                 rec, sigmas = self.decoder(emb)
                 loss_1, loss_2 = _loss_function(
-                    rec, real, sigmas, mu, logvar,
-                    self.transformer.output_info_list, self.loss_factor
+                    rec,
+                    real,
+                    sigmas,
+                    mu,
+                    logvar,
+                    self.transformer.output_info_list,
+                    self.loss_factor,
                 )
                 loss = loss_1 + loss_2
                 loss.backward()
@@ -177,7 +197,17 @@ class TVAESynthesizer(BaseSynthesizer):
                 self.decoder.sigma.data.clamp_(0.01, 1.0)
 
     @random_state
-    def sample(self, samples, shift, shift_type=None, d_min=1, d_off=1, softness=1, mu_shift=0, std_shift=1):
+    def sample(
+        self,
+        samples,
+        shift,
+        shift_type=None,
+        d_min=1,
+        d_off=1,
+        softness=1,
+        mu_shift=0,
+        std_shift=1,
+    ):
         """Sample data similar to the training data.
 
         Args:
@@ -198,18 +228,29 @@ class TVAESynthesizer(BaseSynthesizer):
             std = mean + 1
             noise = torch.normal(mean=mean, std=std).to(device)
 
-            if shift==True:
+            if shift == True:
 
-                assert shift_type!=None
+                assert shift_type != None
 
                 noise = noise.cpu().detach().numpy()
-                if shift_type=='SBO':
-                    noise = SBO(noise, d_min=d_min, d_off=d_off, n_samples=noise.shape[0], softness=softness)
-                if shift_type=='GHO':
-                    noise = GHO(noise, mu=mu_shift, std=std_shift, n_samples=noise.shape[0])
+                if shift_type == "SBO":
+                    noise = SBO(
+                        noise,
+                        d_min=d_min,
+                        d_off=d_off,
+                        n_samples=noise.shape[0],
+                        softness=softness,
+                    )
+                if shift_type == "GHO":
+                    noise = GHO(
+                        noise,
+                        mu=mu_shift,
+                        std=std_shift,
+                        n_samples=noise.shape[0],
+                    )
                 noise = torch.FloatTensor(noise, device=device)
 
-                if shift_type=='VAR':
+                if shift_type == "VAR":
                     noise = torch.normal(mean=mean, std=std_shift).to(device)
 
             fake, sigmas = self.decoder(noise)
@@ -218,7 +259,10 @@ class TVAESynthesizer(BaseSynthesizer):
 
         data = np.concatenate(data, axis=0)
         data = data[:samples]
-        return self.transformer.inverse_transform(data, sigmas.detach().cpu().numpy()), noise
+        return (
+            self.transformer.inverse_transform(data, sigmas.detach().cpu().numpy()),
+            noise,
+        )
 
     def set_device(self, device):
         """Set the `device` to be used ('GPU' or 'CPU)."""

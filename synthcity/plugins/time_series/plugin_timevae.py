@@ -116,7 +116,7 @@ class TimeVAEPlugin(Plugin):
         gamma_penalty: float = 1,
         moments_penalty: float = 100,
         embedding_penalty: float = 10,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -164,15 +164,22 @@ class TimeVAEPlugin(Plugin):
             IntegerDistribution(name="n_iter", low=100, high=1000, step=100),
             IntegerDistribution(name="decoder_n_layers_hidden", low=1, high=4),
             IntegerDistribution(
-                name="decoder_n_units_hidden", low=50, high=150, step=50
+                name="decoder_n_units_hidden",
+                low=50,
+                high=150,
+                step=50,
             ),
             CategoricalDistribution(
-                name="decoder_nonlin", choices=["relu", "leaky_relu", "tanh", "elu"]
+                name="decoder_nonlin",
+                choices=["relu", "leaky_relu", "tanh", "elu"],
             ),
             FloatDistribution(name="decoder_dropout", low=0, high=0.2),
             IntegerDistribution(name="encoder_n_layers_hidden", low=1, high=4),
             IntegerDistribution(
-                name="encoder_n_units_hidden", low=50, high=150, step=50
+                name="encoder_n_units_hidden",
+                low=50,
+                high=150,
+                step=50,
             ),
             CategoricalDistribution(
                 name="encoder_nonlin",
@@ -282,7 +289,8 @@ class TimeVAEPlugin(Plugin):
             )
             outcome_raw = self.outcome_encoder.inverse_transform(outcome_enc)
             outcome = pd.DataFrame(
-                outcome_raw, columns=self.data_info["outcome_features"]
+                outcome_raw,
+                columns=self.data_info["outcome_features"],
             )
 
             if self.data_info["data_type"] == "time_series":

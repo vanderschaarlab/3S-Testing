@@ -157,7 +157,8 @@ class DynamicDeephitTimeSeriesSurvival(TimeSeriesSurvivalPlugin):
         data = self._merge_data(static, temporal, temporal_horizons)
 
         return pd.DataFrame(
-            self.model.predict_risk(data, time_horizons), columns=time_horizons
+            self.model.predict_risk(data, time_horizons),
+            columns=time_horizons,
         )
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
@@ -182,15 +183,21 @@ class DynamicDeephitTimeSeriesSurvival(TimeSeriesSurvivalPlugin):
 
     @staticmethod
     def hyperparameter_space(
-        *args: Any, prefix: str = "", **kwargs: Any
+        *args: Any,
+        prefix: str = "",
+        **kwargs: Any,
     ) -> List[Distribution]:
         return [
             IntegerDistribution(
-                name=f"{prefix}n_units_hidden", low=10, high=100, step=10
+                name=f"{prefix}n_units_hidden",
+                low=10,
+                high=100,
+                step=10,
             ),
             IntegerDistribution(name=f"{prefix}n_layers_hidden", low=1, high=4),
             CategoricalDistribution(
-                name=f"{prefix}batch_size", choices=[100, 200, 500]
+                name=f"{prefix}batch_size",
+                choices=[100, 200, 500],
             ),
             CategoricalDistribution(name=f"{prefix}lr", choices=[1e-2, 1e-3, 1e-4]),
             CategoricalDistribution(name=f"{prefix}rnn_type", choices=rnn_modes),
@@ -260,7 +267,10 @@ class DynamicDeepHitModel:
         self.model: Optional[DynamicDeepHitLayers] = None
 
     def _setup_model(
-        self, inputdim: int, seqlen: int, risks: int
+        self,
+        inputdim: int,
+        seqlen: int,
+        risks: int,
     ) -> "DynamicDeepHitLayers":
         return (
             DynamicDeepHitLayers(
@@ -318,7 +328,8 @@ class DynamicDeepHitModel:
 
                 if self.clipping_value > 0:
                     torch.nn.utils.clip_grad_norm_(
-                        self.model.parameters(), self.clipping_value
+                        self.model.parameters(),
+                        self.clipping_value,
                     )
 
                 optimizer.step()
@@ -354,7 +365,10 @@ class DynamicDeepHitModel:
         return self
 
     def discretize(
-        self, t: np.ndarray, split: int, split_time: Optional[int] = None
+        self,
+        t: np.ndarray,
+        split: int,
+        split_time: Optional[int] = None,
     ) -> Tuple:
         """
         Discretize the survival horizon
@@ -370,7 +384,8 @@ class DynamicDeepHitModel:
         if split_time is None:
             _, split_time = np.histogram(t, split - 1)
         t_discretized = np.array(
-            [np.digitize(t_, split_time, right=True) - 1 for t_ in t], dtype=object
+            [np.digitize(t_, split_time, right=True) - 1 for t_ in t],
+            dtype=object,
         )
         return t_discretized, split_time
 
@@ -420,7 +435,7 @@ class DynamicDeepHitModel:
             raise Exception(
                 "The model has not been fitted yet. Please fit the "
                 + "model using the `fit` method on some training data "
-                + "before calling `predict_survival`."
+                + "before calling `predict_survival`.",
             )
         x = self._preprocess_test_data(x)
 
@@ -440,7 +455,7 @@ class DynamicDeepHitModel:
             raise Exception(
                 "The model has not been fitted yet. Please fit the "
                 + "model using the `fit` method on some training data "
-                + "before calling `predict_survival`."
+                + "before calling `predict_survival`.",
             )
         lens = [len(x_) for x_ in x]
 
@@ -525,13 +540,15 @@ class DynamicDeepHitModel:
                 if torch.sum(t > ti) > 0:
                     # TODO: When data are sorted in time -> wan we make it even faster ?
                     loss += torch.mean(
-                        torch.exp((cifk[t > ti][:, ti] - ci[ti])) / self.sigma
+                        torch.exp((cifk[t > ti][:, ti] - ci[ti])) / self.sigma,
                     )
 
         return loss / len(cif)
 
     def longitudinal_loss(
-        self, longitudinal_prediction: torch.Tensor, x: torch.Tensor
+        self,
+        longitudinal_prediction: torch.Tensor,
+        x: torch.Tensor,
     ) -> torch.Tensor:
         """
         Penalize error in the longitudinal predictions
@@ -556,7 +573,8 @@ class DynamicDeepHitModel:
         observation_mask[:, 0] = False  # Remove first observation
 
         return torch.nn.MSELoss(reduction="mean")(
-            longitudinal_prediction[prediction_mask], x[observation_mask]
+            longitudinal_prediction[prediction_mask],
+            x[observation_mask],
         )
 
     def total_loss(
@@ -613,7 +631,11 @@ class DynamicDeepHitLayers(nn.Module):
         # RNN model for longitudinal data
         if self.rnn_type == "LSTM":
             self.embedding = nn.LSTM(
-                input_dim, hidden_rnn, layers_rnn, bias=False, batch_first=True
+                input_dim,
+                hidden_rnn,
+                layers_rnn,
+                bias=False,
+                batch_first=True,
             )
         elif self.rnn_type == "RNN":
             self.embedding = nn.RNN(
@@ -626,11 +648,18 @@ class DynamicDeepHitLayers(nn.Module):
             )
         elif self.rnn_type == "GRU":
             self.embedding = nn.GRU(
-                input_dim, hidden_rnn, layers_rnn, bias=False, batch_first=True
+                input_dim,
+                hidden_rnn,
+                layers_rnn,
+                bias=False,
+                batch_first=True,
             )
         elif self.rnn_type == "Transformer":
             self.embedding = TransformerModel(
-                input_dim, hidden_rnn, n_layers_hidden=layers_rnn, dropout=dropout
+                input_dim,
+                hidden_rnn,
+                n_layers_hidden=layers_rnn,
+                dropout=dropout,
             )
         elif self.rnn_type == "Wavelet":
             self.embedding = Wavelet(
@@ -690,7 +719,7 @@ class DynamicDeepHitLayers(nn.Module):
                     dropout=self.dropout,
                     n_layers_hidden=layers_rnn,
                     n_units_hidden=hidden_rnn,
-                )
+                ),
             )
         self.cause_specific = nn.ModuleList(self.cause_specific)
 
@@ -698,7 +727,10 @@ class DynamicDeepHitLayers(nn.Module):
         self.soft = nn.Softmax(dim=-1)  # On all observed output
 
     def forward_attention(
-        self, x: torch.Tensor, inputmask: torch.Tensor, hidden: torch.Tensor
+        self,
+        x: torch.Tensor,
+        inputmask: torch.Tensor,
+        hidden: torch.Tensor,
     ) -> torch.Tensor:
         # Attention using last observation to predict weight of all previously observed
         # Extract last observation (the one used for predictions)
@@ -711,7 +743,8 @@ class DynamicDeepHitLayers(nn.Module):
 
         # Concatenate all previous with new to measure attention
         concatenation = torch.cat(
-            [hidden, x_last.unsqueeze(1).repeat(1, x.size(1), 1)], -1
+            [hidden, x_last.unsqueeze(1).repeat(1, x.size(1), 1)],
+            -1,
         )
 
         # Compute attention and normalize
@@ -719,13 +752,14 @@ class DynamicDeepHitLayers(nn.Module):
             attention = self.attention(concatenation).squeeze(-1)
         else:
             attention = self.attention(
-                torch.zeros(len(concatenation), 0).to(self.device), concatenation
+                torch.zeros(len(concatenation), 0).to(self.device),
+                concatenation,
             ).squeeze(-1)
         attention[
             index >= last_observations_idx
         ] = -1e10  # Want soft max to be zero as values not observed
         attention[last_observations > 0] = self.attention_soft(
-            attention[last_observations > 0]
+            attention[last_observations > 0],
         )  # Weight previous observation
         attention[last_observations == 0] = 0  # No context for only one observation
 

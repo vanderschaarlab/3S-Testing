@@ -113,7 +113,7 @@ class CategoricalDistribution(Distribution):
 
         if len(v) == 0:
             raise ValueError(
-                "Invalid choices for CategoricalDistribution. Provide data or choices params"
+                "Invalid choices for CategoricalDistribution. Provide data or choices params",
             )
         return v
 
@@ -212,7 +212,7 @@ class FloatDistribution(Distribution):
                 (self.name, "le", self.high),
                 (self.name, "ge", self.low),
                 (self.name, "dtype", "float"),
-            ]
+            ],
         )
 
     def min(self) -> Any:
@@ -278,7 +278,7 @@ class IntegerDistribution(Distribution):
                 (self.name, "le", self.high),
                 (self.name, "ge", self.low),
                 (self.name, "dtype", "int"),
-            ]
+            ],
         )
 
     def min(self) -> Any:

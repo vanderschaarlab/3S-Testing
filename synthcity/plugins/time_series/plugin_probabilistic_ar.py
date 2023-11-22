@@ -46,13 +46,14 @@ class ProbabilisticAutoregressivePlugin(Plugin):
         sample_size: int = 1,
         device: Any = DEVICE,
         encoder_max_clusters: int = 10,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
         self.model = PARModel(epochs=n_iter, sample_size=sample_size, verbose=False)
         self.encoder = TabularEncoder(
-            max_clusters=encoder_max_clusters, whitelist=["seq_id", "seq_time_id"]
+            max_clusters=encoder_max_clusters,
+            whitelist=["seq_id", "seq_time_id"],
         )
 
     @staticmethod
@@ -71,7 +72,10 @@ class ProbabilisticAutoregressivePlugin(Plugin):
         ]
 
     def _fit(
-        self, X: DataLoader, *args: Any, **kwargs: Any
+        self,
+        X: DataLoader,
+        *args: Any,
+        **kwargs: Any,
     ) -> "ProbabilisticAutoregressivePlugin":
         assert X.type() in ["time_series", "time_series_survival"]
 

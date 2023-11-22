@@ -57,7 +57,9 @@ class DetectionEvaluator(MetricEvaluator):
         res = []
 
         skf = StratifiedKFold(
-            n_splits=self._n_folds, shuffle=True, random_state=self._random_state
+            n_splits=self._n_folds,
+            shuffle=True,
+            random_state=self._random_state,
         )
         for train_idx, test_idx in skf.split(data, labels):
             train_data = data[train_idx]
@@ -66,7 +68,8 @@ class DetectionEvaluator(MetricEvaluator):
             test_labels = labels[test_idx]
 
             model = model_template(**model_args).fit(
-                train_data.astype(float), train_labels
+                train_data.astype(float),
+                train_labels,
             )
 
             test_pred = model.predict(test_data.astype(float))

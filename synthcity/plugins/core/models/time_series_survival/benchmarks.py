@@ -68,7 +68,13 @@ def _search_objective_meta(
         try:
             model = estimator(n_iter=10, **args)
             raw_score = evaluate_ts_survival_model(
-                model, static, temporal, temporal_horizons, T, Y, time_horizons
+                model,
+                static,
+                temporal,
+                temporal_horizons,
+                T,
+                Y,
+                time_horizons,
             )
         except BaseException as e:
             log.error(f"model search failed {e}")
@@ -133,7 +139,7 @@ def search_hyperparams(
     score = study.best_trial.value
     args = _normalize_params(estimator.name(), study.best_trial.params)
     log.info(
-        f"[select_ts_survival] model = {estimator.name()} score = {score} args = {args}"
+        f"[select_ts_survival] model = {estimator.name()} score = {score} args = {args}",
     )
 
     return args
@@ -219,11 +225,18 @@ def evaluate_ts_survival_model(
             model = copy.deepcopy(estimator)
 
             model.fit(
-                static_train, temporal_train, temporal_horizons_train, T_train, Y_train
+                static_train,
+                temporal_train,
+                temporal_horizons_train,
+                T_train,
+                Y_train,
             )
         try:
             pred = model.predict(
-                static_test, temporal_test, temporal_horizons_test, time_horizons
+                static_test,
+                temporal_test,
+                temporal_horizons_test,
+                time_horizons,
             ).to_numpy()
         except BaseException as e:
             raise e
@@ -263,7 +276,12 @@ def evaluate_ts_survival_model(
             Y_train,
             Y_test,
         ) = train_test_split(
-            static, temporal, temporal_horizons, T, Y, random_state=random_state
+            static,
+            temporal,
+            temporal_horizons,
+            T,
+            Y,
+            random_state=random_state,
         )
         local_time_horizons = [t for t in time_horizons if t > np.min(T_test)]
 
@@ -393,7 +411,11 @@ def evaluate_ts_classification(
             Y_train,
             Y_test,
         ) = train_test_split(
-            static, temporal, temporal_horizons, Y, random_state=random_state
+            static,
+            temporal,
+            temporal_horizons,
+            Y,
+            random_state=random_state,
         )
 
         aucroc = _get_metrics(

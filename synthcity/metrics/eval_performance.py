@@ -154,7 +154,9 @@ class PerformanceEvaluator(MetricEvaluator):
         if len(id_y_gt.unique()) < 5:
             eval_cbk = self._evaluate_performance_classification
             skf = StratifiedKFold(
-                n_splits=self._n_folds, shuffle=True, random_state=self._random_state
+                n_splits=self._n_folds,
+                shuffle=True,
+                random_state=self._random_state,
             )
             model = clf_model
             model_args = clf_args
@@ -163,7 +165,9 @@ class PerformanceEvaluator(MetricEvaluator):
             model = regression_model
             model_args = regression_args
             skf = KFold(
-                n_splits=self._n_folds, shuffle=True, random_state=self._random_state
+                n_splits=self._n_folds,
+                shuffle=True,
+                random_state=self._random_state,
             )
 
         real_scores = []
@@ -177,13 +181,28 @@ class PerformanceEvaluator(MetricEvaluator):
             test_labels = np.asarray(id_y_gt.loc[test_idx])
 
             real_score = eval_cbk(
-                model, model_args, train_data, train_labels, test_data, test_labels
+                model,
+                model_args,
+                train_data,
+                train_labels,
+                test_data,
+                test_labels,
             )
             synth_score_id = eval_cbk(
-                model, model_args, iter_X_syn, iter_y_syn, test_data, test_labels
+                model,
+                model_args,
+                iter_X_syn,
+                iter_y_syn,
+                test_data,
+                test_labels,
             )
             synth_score_ood = eval_cbk(
-                model, model_args, iter_X_syn, iter_y_syn, ood_X_gt, ood_y_gt
+                model,
+                model_args,
+                iter_X_syn,
+                iter_y_syn,
+                ood_X_gt,
+                ood_y_gt,
             )
 
             real_scores.append(real_score)
@@ -640,7 +659,10 @@ class PerformanceEvaluatorLinear(PerformanceEvaluator):
             args: dict = {}
             log.info(f"Performance evaluation using CoxTimeSeriesSurvival and {args}")
             return self._evaluate_time_series_survival_performance(
-                CoxTimeSeriesSurvival, args, X_gt, X_syn
+                CoxTimeSeriesSurvival,
+                args,
+                X_gt,
+                X_syn,
             )
         else:
             raise RuntimeError(f"Unuspported task type {self._task_type}")
@@ -666,7 +688,10 @@ class PerformanceEvaluatorMLP(PerformanceEvaluator):
     ) -> Dict:
         if self._task_type == "survival_analysis":
             return self._evaluate_survival_model(
-                DeephitSurvivalAnalysis, {}, X_gt, X_syn
+                DeephitSurvivalAnalysis,
+                {},
+                X_gt,
+                X_syn,
             )
 
         elif self._task_type == "classification" or self._task_type == "regression":
@@ -698,7 +723,10 @@ class PerformanceEvaluatorMLP(PerformanceEvaluator):
                 "output_shape": [info["outcome_len"]],
             }
             return self._evaluate_time_series_performance(
-                TimeSeriesModel, args, X_gt, X_syn
+                TimeSeriesModel,
+                args,
+                X_gt,
+                X_syn,
             )
         elif self._task_type == "time_series_survival":
             static, temporal, temporal_horizons, T, E = X_gt.unpack()
@@ -707,10 +735,13 @@ class PerformanceEvaluatorMLP(PerformanceEvaluator):
 
             args = {}
             log.info(
-                f"Performance evaluation using DynamicDeephitTimeSeriesSurvival and {args}"
+                f"Performance evaluation using DynamicDeephitTimeSeriesSurvival and {args}",
             )
             return self._evaluate_time_series_survival_performance(
-                DynamicDeephitTimeSeriesSurvival, args, X_gt, X_syn
+                DynamicDeephitTimeSeriesSurvival,
+                args,
+                X_gt,
+                X_syn,
             )
 
         else:
