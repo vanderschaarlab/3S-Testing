@@ -47,7 +47,10 @@ class MarginalDistributionPlugin(Plugin):
         return []
 
     def _fit(
-        self, X: DataLoader, *args: Any, **kwargs: Any
+        self,
+        X: DataLoader,
+        *args: Any,
+        **kwargs: Any,
     ) -> "MarginalDistributionPlugin":
         return self
 

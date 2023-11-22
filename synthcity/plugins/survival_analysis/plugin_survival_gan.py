@@ -3,7 +3,6 @@ from typing import Any, List, Optional
 
 # third party
 import pandas as pd
-
 # Necessary packages
 from pydantic import validate_arguments
 
@@ -61,7 +60,7 @@ class SurvivalGANPlugin(Plugin):
         ]
         if dataloader_sampling_strategy not in valid_sampling_strategies:
             raise ValueError(
-                f"Invalid sampling strategy {dataloader_sampling_strategy}. Supported values: {valid_sampling_strategies}"
+                f"Invalid sampling strategy {dataloader_sampling_strategy}. Supported values: {valid_sampling_strategies}",
             )
         self.tte_strategy = tte_strategy
         self.dataloader_sampling_strategy = dataloader_sampling_strategy
@@ -79,7 +78,7 @@ class SurvivalGANPlugin(Plugin):
                 uncensoring_model={self.uncensoring_model}
                 censoring_strategy = {censoring_strategy}
                 device={self.device}
-            """
+            """,
         )
 
     @staticmethod
@@ -115,7 +114,8 @@ class SurvivalGANPlugin(Plugin):
         if self.use_conditional:
             important_feats = X.important_features
             precond = pd.concat(
-                [T.to_frame(), E.to_frame(), X[important_feats]], axis=1
+                [T.to_frame(), E.to_frame(), X[important_feats]],
+                axis=1,
             )
             self.conditional = BinEncoder().fit_transform(precond)
             n_units_conditional = self.conditional.shape[1]

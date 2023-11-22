@@ -160,7 +160,10 @@ class TimeEventGAN(nn.Module):
             return self.generator(torch.hstack([X, fixed_noise])).detach().cpu()
 
     def dataloader(
-        self, X: torch.Tensor, T: torch.Tensor, E: torch.Tensor
+        self,
+        X: torch.Tensor,
+        T: torch.Tensor,
+        E: torch.Tensor,
     ) -> Tuple[DataLoader, TensorDataset]:
         X_train, X_val, T_train, T_val, E_train, E_val = train_test_split(
             X.cpu(),
@@ -181,11 +184,16 @@ class TimeEventGAN(nn.Module):
         )
 
         return DataLoader(
-            train_dataset, batch_size=self.batch_size, pin_memory=False
+            train_dataset,
+            batch_size=self.batch_size,
+            pin_memory=False,
         ), DataLoader(val_dataset, batch_size=len(val_dataset), pin_memory=False)
 
     def _generate_training_outputs(
-        self, X: torch.Tensor, T: torch.Tensor, E: torch.Tensor
+        self,
+        X: torch.Tensor,
+        T: torch.Tensor,
+        E: torch.Tensor,
     ) -> tuple:
         # Train with non-censored true batch
         Xnc = X[E == 1].to(self.device)
@@ -225,7 +233,8 @@ class TimeEventGAN(nn.Module):
         fake_T = self.generator(noncen_input).squeeze()
 
         errG_noncen = nn.MSELoss()(
-            fake_T, Tnc
+            fake_T,
+            Tnc,
         )  # fake_T should be == T for noncensored data
 
         # Evaluate censored error
@@ -239,7 +248,7 @@ class TimeEventGAN(nn.Module):
         fake_T = self.generator(cen_input)
 
         errG_cen = torch.mean(
-            nn.ReLU()(Tc - fake_T)
+            nn.ReLU()(Tc - fake_T),
         )  # fake_T should be >= T for censored data
 
         # Discriminator loss
@@ -263,7 +272,8 @@ class TimeEventGAN(nn.Module):
         # Update G
         if self.clipping_value > 0:
             torch.nn.utils.clip_grad_norm_(
-                self.generator.parameters(), self.clipping_value
+                self.generator.parameters(),
+                self.clipping_value,
             )
         self.generator.optimizer.step()
 
@@ -301,7 +311,8 @@ class TimeEventGAN(nn.Module):
             # Update D
             if self.clipping_value > 0:
                 torch.nn.utils.clip_grad_norm_(
-                    self.discriminator.parameters(), self.clipping_value
+                    self.discriminator.parameters(),
+                    self.clipping_value,
                 )
             self.discriminator.optimizer.step()
 
@@ -321,12 +332,12 @@ class TimeEventGAN(nn.Module):
             G_losses.append(
                 self._train_epoch_generator(
                     *data,
-                )
+                ),
             )
             D_losses.append(
                 self._train_epoch_discriminator(
                     *data,
-                )
+                ),
             )
 
         return np.mean(G_losses), np.mean(D_losses)
@@ -374,12 +385,12 @@ class TimeEventGAN(nn.Module):
 
                     if patience > self.patience:
                         log.debug(
-                            f"No improvement for {patience} iterations. stopping..."
+                            f"No improvement for {patience} iterations. stopping...",
                         )
                         break
 
                 log.debug(
-                    f"[{i}/{self.generator_n_iter}]\tLoss_D: {d_loss}\tLoss_G: {g_loss}\tC-Index val: {c_index_val} Expected time err: {exp_err_val}"
+                    f"[{i}/{self.generator_n_iter}]\tLoss_D: {d_loss}\tLoss_G: {g_loss}\tC-Index val: {c_index_val} Expected time err: {exp_err_val}",
                 )
 
         return self
@@ -403,7 +414,9 @@ class DATETimeToEvent(TimeToEventPlugin):
         self._fit_censoring_model(X, T, Y)
 
         self.model = TimeEventGAN(
-            n_features=X.shape[1], n_units_latent=X.shape[1], **self.kwargs
+            n_features=X.shape[1],
+            n_units_latent=X.shape[1],
+            **self.kwargs,
         )
 
         self.scaler_X = MinMaxScaler()
@@ -449,26 +462,38 @@ class DATETimeToEvent(TimeToEventPlugin):
         return [
             IntegerDistribution(name="generator_n_layers_hidden", low=1, high=5),
             IntegerDistribution(
-                name="generator_n_units_hidden", low=100, high=500, step=50
+                name="generator_n_units_hidden",
+                low=100,
+                high=500,
+                step=50,
             ),
             CategoricalDistribution(
-                name="generator_nonlin", choices=["relu", "leaky_relu"]
+                name="generator_nonlin",
+                choices=["relu", "leaky_relu"],
             ),
             IntegerDistribution(
-                name="generator_n_iter", low=1000, high=3000, step=1000
+                name="generator_n_iter",
+                low=1000,
+                high=3000,
+                step=1000,
             ),
             FloatDistribution(name="generator_dropout", low=0, high=0.2),
             CategoricalDistribution(name="generator_lr", choices=[1e-2, 1e-3, 1e-4]),
             IntegerDistribution(name="discriminator_n_layers_hidden", low=1, high=5),
             IntegerDistribution(
-                name="discriminator_n_units_hidden", low=100, high=500, step=50
+                name="discriminator_n_units_hidden",
+                low=100,
+                high=500,
+                step=50,
             ),
             CategoricalDistribution(
-                name="discriminator_nonlin", choices=["relu", "leaky_relu"]
+                name="discriminator_nonlin",
+                choices=["relu", "leaky_relu"],
             ),
             FloatDistribution(name="discriminator_dropout", low=0, high=0.2),
             CategoricalDistribution(
-                name="discriminator_lr", choices=[1e-2, 1e-3, 1e-4]
+                name="discriminator_lr",
+                choices=[1e-2, 1e-3, 1e-4],
             ),
             CategoricalDistribution(name="batch_size", choices=[100, 250, 500, 1000]),
         ]

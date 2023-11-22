@@ -21,15 +21,18 @@ def _check_estimate_1d(estimate: np.ndarray, test_time: np.ndarray) -> np.ndarra
     if estimate.ndim != 1:
         raise ValueError(
             "Expected 1D array, got {:d}D array instead:\narray={}.\n".format(
-                estimate.ndim, estimate
-            )
+                estimate.ndim,
+                estimate,
+            ),
         )
     check_consistent_length(test_time, estimate)
     return estimate
 
 
 def _check_inputs(
-    event_indicator: np.ndarray, event_time: np.ndarray, estimate: np.ndarray
+    event_indicator: np.ndarray,
+    event_time: np.ndarray,
+    estimate: np.ndarray,
 ) -> np.ndarray:
     check_consistent_length(event_indicator, event_time, estimate)
     event_indicator = check_array(event_indicator, ensure_2d=False)
@@ -39,8 +42,8 @@ def _check_inputs(
     if not np.issubdtype(event_indicator.dtype, np.bool_):
         raise ValueError(
             "only boolean arrays are supported as class labels for survival analysis, got {0}".format(
-                event_indicator.dtype
-            )
+                event_indicator.dtype,
+            ),
         )
 
     if len(event_time) < 2:
@@ -59,15 +62,18 @@ def _check_times(test_time: np.ndarray, times: np.ndarray) -> np.ndarray:
     if times.max() >= test_time.max() or times.min() < test_time.min():
         raise ValueError(
             "all times must be within follow-up time of test data: [{}; {}[".format(
-                test_time.min(), test_time.max()
-            )
+                test_time.min(),
+                test_time.max(),
+            ),
         )
 
     return times
 
 
 def _check_estimate_2d(
-    estimate: np.ndarray, test_time: np.ndarray, time_points: np.ndarray
+    estimate: np.ndarray,
+    test_time: np.ndarray,
+    time_points: np.ndarray,
 ) -> np.ndarray:
     estimate = check_array(estimate, ensure_2d=False, allow_nd=False)
     time_points = _check_times(test_time, time_points)
@@ -76,15 +82,18 @@ def _check_estimate_2d(
     if estimate.ndim == 2 and estimate.shape[1] != time_points.shape[0]:
         raise ValueError(
             "expected estimate with {} columns, but got {}".format(
-                time_points.shape[0], estimate.shape[1]
-            )
+                time_points.shape[0],
+                estimate.shape[1],
+            ),
         )
 
     return estimate, time_points
 
 
 def _get_comparable(
-    event_indicator: np.ndarray, event_time: np.ndarray, order: np.ndarray
+    event_indicator: np.ndarray,
+    event_time: np.ndarray,
+    order: np.ndarray,
 ) -> np.ndarray:
     n_samples = len(event_time)
     tied_time = 0
@@ -126,7 +135,7 @@ def _estimate_concordance_index(
 
     if len(comparable) == 0:
         raise RuntimeError(
-            "Data has no comparable pairs, cannot estimate concordance index."
+            "Data has no comparable pairs, cannot estimate concordance index.",
         )
 
     concordant = 0
@@ -204,13 +213,19 @@ def concordance_index_censored(
         Concordance index
     """
     event_indicator, event_time, estimate = _check_inputs(
-        event_indicator, event_time, estimate
+        event_indicator,
+        event_time,
+        estimate,
     )
 
     w = np.ones_like(estimate)
 
     return _estimate_concordance_index(
-        event_indicator, event_time, estimate, w, tied_tol
+        event_indicator,
+        event_time,
+        estimate,
+        w,
+        tied_tol,
     )
 
 
@@ -421,7 +436,7 @@ def brier_score(
 
         brier_scores[i] = np.mean(
             np.square(est) * is_case.astype(int) / prob_cens_y
-            + np.square(1.0 - est) * is_control.astype(int) / prob_cens_t[i]
+            + np.square(1.0 - est) * is_control.astype(int) / prob_cens_t[i],
         )
 
     return brier_scores

@@ -4,7 +4,6 @@ from typing import Any, List, Optional, Union
 # third party
 import numpy as np
 import pandas as pd
-
 # Necessary packages
 from pydantic import validate_arguments
 from torch.utils.data import sampler
@@ -88,7 +87,7 @@ class RTVAEPlugin(Plugin):
         data_encoder_max_clusters: int = 20,
         robust_divergence_beta: int = 2,  # used only for loss_strategy "robust_divergence"
         dataloader_sampler: Optional[sampler.Sampler] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.n_units_conditional = n_units_conditional
@@ -127,15 +126,22 @@ class RTVAEPlugin(Plugin):
             CategoricalDistribution(name="weight_decay", choices=[1e-3, 1e-4]),
             CategoricalDistribution(name="batch_size", choices=[64, 128, 256, 512]),
             IntegerDistribution(
-                name="decoder_n_units_hidden", low=50, high=500, step=50
+                name="decoder_n_units_hidden",
+                low=50,
+                high=500,
+                step=50,
             ),
             CategoricalDistribution(
-                name="decoder_nonlin", choices=["relu", "leaky_relu", "tanh", "elu"]
+                name="decoder_nonlin",
+                choices=["relu", "leaky_relu", "tanh", "elu"],
             ),
             FloatDistribution(name="decoder_dropout", low=0, high=0.2),
             IntegerDistribution(name="encoder_n_layers_hidden", low=1, high=5),
             IntegerDistribution(
-                name="encoder_n_units_hidden", low=50, high=500, step=50
+                name="encoder_n_units_hidden",
+                low=50,
+                high=500,
+                step=50,
             ),
             CategoricalDistribution(
                 name="encoder_nonlin",

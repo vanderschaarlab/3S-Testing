@@ -130,7 +130,8 @@ class NormalizingFlowsPlugin(Plugin):
             CategoricalDistribution(name="batch_norm", choices=[True, False]),
             CategoricalDistribution(name="lr", choices=[1e-3, 1e-4, 2e-4]),
             CategoricalDistribution(
-                name="linear_transform_type", choices=["lu", "permutation", "svd"]
+                name="linear_transform_type",
+                choices=["lu", "permutation", "svd"],
             ),
             CategoricalDistribution(
                 name="base_transform_type",
@@ -146,7 +147,10 @@ class NormalizingFlowsPlugin(Plugin):
         ]
 
     def _fit(
-        self, X: DataLoader, *args: Any, **kwargs: Any
+        self,
+        X: DataLoader,
+        *args: Any,
+        **kwargs: Any,
     ) -> "NormalizingFlowsPlugin":
         if self.tabular:
             self.model = TabularFlows(

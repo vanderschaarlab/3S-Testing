@@ -1,13 +1,19 @@
 # Adapted from https://github.com/flxai/soft-brownian-offset
 
 import numpy as np
-
 from sklearn.metrics import pairwise_distances
 from tqdm import tqdm
 
 
-def SBO(X, d_min, d_off, n_samples=1, show_progress=False, softness=False,
-                         random_state=None):
+def SBO(
+    X,
+    d_min,
+    d_off,
+    n_samples=1,
+    show_progress=False,
+    softness=False,
+    random_state=None,
+):
     """Generates OOD samples using SBO on the input X and returns n_samples number of samples constrained by
     other parameters.
     Args:
@@ -83,8 +89,9 @@ def GHO(X, mu=0, std=1, n_samples=1, show_progress=False, random_state=None):
         ys.append(np.array(y))
     return np.array(ys)
 
+
 # Inspired by https://stackoverflow.com/a/33977530/10484131
-def gaussian_hyperspheric_offset(n_samples, mu=4, std=.7, n_dim=3, random_state=None):
+def gaussian_hyperspheric_offset(n_samples, mu=4, std=0.7, n_dim=3, random_state=None):
     """Generates OOD samples using GHO and returns n_samples number of samples constrained by other
     parameters.
     Args:

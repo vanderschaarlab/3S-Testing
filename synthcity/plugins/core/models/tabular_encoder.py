@@ -11,7 +11,7 @@ from typing import Any, List, Optional, Sequence, Tuple
 import numpy as np
 import pandas as pd
 from pydantic import validate_arguments
-from rdt.transformers import ClusterBasedNormalizer #BayesGMMTransformer
+from rdt.transformers import ClusterBasedNormalizer  # BayesGMMTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
@@ -60,14 +60,15 @@ class BinEncoder(TransformerMixin, BaseEstimator):
                 A ``ColumnTransformInfo`` object.
         """
 
-
-
         column_name = data.name
-        
+
         # gm = BayesGMMTransformer(
         #     max_clusters=self.max_clusters, weight_threshold=self.weight_threshold
         # )
-        gm = ClusterBasedNormalizer(model_missing_values=True, max_clusters=min(len(data), 10))
+        gm = ClusterBasedNormalizer(
+            model_missing_values=True,
+            max_clusters=min(len(data), 10),
+        )
         gm.fit(data.to_frame(), [column_name])
         num_components = sum(gm.valid_component_indicator)
 
@@ -79,7 +80,9 @@ class BinEncoder(TransformerMixin, BaseEstimator):
         )
 
     def fit(
-        self, raw_data: pd.Series, discrete_columns: Optional[List] = None
+        self,
+        raw_data: pd.Series,
+        discrete_columns: Optional[List] = None,
     ) -> "BinEncoder":
         """Fit the ``BinEncoder``.
 
@@ -103,7 +106,9 @@ class BinEncoder(TransformerMixin, BaseEstimator):
         return self
 
     def _transform_continuous(
-        self, column_transform_info: ColumnTransformInfo, data: pd.Series
+        self,
+        column_transform_info: ColumnTransformInfo,
+        data: pd.Series,
     ) -> pd.Series:
         column_name = data.name
         gm = column_transform_info.transform
@@ -120,7 +125,8 @@ class BinEncoder(TransformerMixin, BaseEstimator):
             column_transform_info = self._column_transform_info[column_name]
 
             output[column_name] = self._transform_continuous(
-                column_transform_info, raw_data[column_name]
+                column_transform_info,
+                raw_data[column_name],
             )
 
         return output
@@ -174,7 +180,10 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
         # gm = BayesGMMTransformer(
         #     max_clusters=self.max_clusters, weight_threshold=self.weight_threshold
         # )
-        gm = ClusterBasedNormalizer(model_missing_values=True, max_clusters=min(len(data), 10))
+        gm = ClusterBasedNormalizer(
+            model_missing_values=True,
+            max_clusters=min(len(data), 10),
+        )
         gm.fit(data.to_frame(), [column_name])
         num_components = sum(gm.valid_component_indicator)
 
@@ -211,7 +220,9 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def fit(
-        self, raw_data: pd.DataFrame, discrete_columns: Optional[List] = None
+        self,
+        raw_data: pd.DataFrame,
+        discrete_columns: Optional[List] = None,
     ) -> Any:
         """Fit the ``TabularEncoder``.
 
@@ -245,7 +256,9 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
         return self
 
     def _transform_continuous(
-        self, column_transform_info: ColumnTransformInfo, data: pd.Series
+        self,
+        column_transform_info: ColumnTransformInfo,
+        data: pd.Series,
     ) -> pd.DataFrame:
         column_name = data.name
         gm = column_transform_info.transform
@@ -269,7 +282,9 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
         )
 
     def _transform_discrete(
-        self, column_transform_info: ColumnTransformInfo, data: pd.Series
+        self,
+        column_transform_info: ColumnTransformInfo,
+        data: pd.Series,
     ) -> pd.DataFrame:
         ohe = column_transform_info.transform
         return pd.DataFrame(
@@ -296,11 +311,11 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
 
             if column_transform_info.column_type == "continuous":
                 column_data_list.append(
-                    self._transform_continuous(column_transform_info, data)
+                    self._transform_continuous(column_transform_info, data),
                 )
             else:
                 column_data_list.append(
-                    self._transform_discrete(column_transform_info, data)
+                    self._transform_discrete(column_transform_info, data),
                 )
 
         result = pd.concat(column_data_list, axis=1)
@@ -316,14 +331,17 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
     ) -> pd.DataFrame:
         gm = column_transform_info.transform
         data = pd.DataFrame(
-            column_data.values[:, :2], columns=list(gm.get_output_sdtypes())
+            column_data.values[:, :2],
+            columns=list(gm.get_output_sdtypes()),
         )
         data.iloc[:, 1] = np.argmax(column_data.values[:, 1:], axis=1)
         return gm.reverse_transform(data, [column_transform_info.column_name])
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _inverse_transform_discrete(
-        self, column_transform_info: ColumnTransformInfo, column_data: pd.DataFrame
+        self,
+        column_transform_info: ColumnTransformInfo,
+        column_data: pd.DataFrame,
     ) -> pd.DataFrame:
         ohe = column_transform_info.transform
         column = column_transform_info.column_name
@@ -359,11 +377,13 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
             column_data = data.iloc[:, list(range(st, st + dim))]
             if column_transform_info.column_type == "continuous":
                 recovered_column_data = self._inverse_transform_continuous(
-                    column_transform_info, column_data
+                    column_transform_info,
+                    column_data,
                 )
             else:
                 recovered_column_data = self._inverse_transform_discrete(
-                    column_transform_info, column_data
+                    column_transform_info,
+                    column_data,
                 )
 
             recovered_column_data_list.append(recovered_column_data)
@@ -372,7 +392,9 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
 
         recovered_data = np.column_stack(recovered_column_data_list)
         recovered_data = pd.DataFrame(
-            recovered_data, columns=column_names, index=data.index
+            recovered_data,
+            columns=column_names,
+            index=data.index,
         ).astype(self._column_raw_dtypes.filter(column_names))
         return recovered_data
 
@@ -390,12 +412,14 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
             [
                 column_transform_info.output_dimensions
                 for column_transform_info in self._column_transform_info_list
-            ]
+            ],
         )
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def activation_layout(
-        self, discrete_activation: str, continuous_activation: str
+        self,
+        discrete_activation: str,
+        continuous_activation: str,
     ) -> Sequence[Tuple]:
         """Get the layout of the activations.
 
@@ -413,11 +437,11 @@ class TabularEncoder(TransformerMixin, BaseEstimator):
                             discrete_activation,
                             column_transform_info.output_dimensions - 1,
                         ),
-                    ]
+                    ],
                 )
             else:
                 out.append(
-                    (discrete_activation, column_transform_info.output_dimensions)
+                    (discrete_activation, column_transform_info.output_dimensions),
                 )
 
         return out
@@ -460,7 +484,8 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
 
         temporal_arr = np.asarray(temporal_data)
         temporal_arr = np.swapaxes(temporal_arr, -1, 0).reshape(
-            len(temporal_features), -1
+            len(temporal_features),
+            -1,
         )
         temporal_df = pd.DataFrame(temporal_arr.T, columns=temporal_features)
 
@@ -468,7 +493,7 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
 
         # Temporal horizons
         self.temporal_horizons_encoder = MinMaxScaler().fit(
-            np.asarray(temporal_horizons).reshape(-1, 1)
+            np.asarray(temporal_horizons).reshape(-1, 1),
         )
 
         return self
@@ -491,7 +516,9 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
 
         # Temporal
         self.fit_temporal(
-            temporal_data, temporal_horizons, discrete_columns=discrete_columns
+            temporal_data,
+            temporal_horizons,
+            discrete_columns=discrete_columns,
         )
 
         return self
@@ -503,7 +530,7 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
     ) -> List:
         horizons_encoded = (
             self.temporal_horizons_encoder.transform(
-                np.asarray(temporal_horizons).reshape(-1, 1)
+                np.asarray(temporal_horizons).reshape(-1, 1),
             )
             .reshape(len(temporal_horizons), -1)
             .tolist()
@@ -543,7 +570,8 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
         static_encoded = self.transform_static(static_data)
 
         temporal_encoded, horizons_encoded = self.transform_temporal(
-            temporal_data, temporal_horizons
+            temporal_data,
+            temporal_horizons,
         )
 
         return static_encoded, temporal_encoded, horizons_encoded
@@ -555,7 +583,8 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
         temporal_horizons: List,
     ) -> Tuple[pd.DataFrame, List]:
         return self.fit_temporal(temporal_data, temporal_horizons).transform_temporal(
-            temporal_data, temporal_horizons
+            temporal_data,
+            temporal_horizons,
         )
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
@@ -566,7 +595,9 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
         temporal_horizons: List,
     ) -> Tuple[pd.DataFrame, pd.DataFrame, List]:
         return self.fit(static_data, temporal_data, temporal_horizons).transform(
-            static_data, temporal_data, temporal_horizons
+            static_data,
+            temporal_data,
+            temporal_horizons,
         )
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
@@ -576,7 +607,7 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
     ) -> pd.DataFrame:
         horizons_decoded = (
             self.temporal_horizons_encoder.inverse_transform(
-                np.asarray(temporal_horizons).reshape(-1, 1)
+                np.asarray(temporal_horizons).reshape(-1, 1),
             )
             .reshape(len(temporal_horizons), -1)
             .tolist()
@@ -615,7 +646,8 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
         static_decoded = self.inverse_transform_static(static_encoded)
 
         temporal_decoded, horizons_decoded = self.inverse_transform_temporal(
-            temporal_encoded, temporal_horizons
+            temporal_encoded,
+            temporal_horizons,
         )
         return static_decoded, temporal_decoded, horizons_decoded
 
@@ -627,20 +659,27 @@ class TimeSeriesTabularEncoder(TransformerMixin, BaseEstimator):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def activation_layout_temporal(
-        self, discrete_activation: str, continuous_activation: str
+        self,
+        discrete_activation: str,
+        continuous_activation: str,
     ) -> Any:
         return self.temporal_encoder.activation_layout(
-            discrete_activation, continuous_activation
+            discrete_activation,
+            continuous_activation,
         )
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def activation_layout(
-        self, discrete_activation: str, continuous_activation: str
+        self,
+        discrete_activation: str,
+        continuous_activation: str,
     ) -> Tuple:
         return self.static_encoder.activation_layout(
-            discrete_activation, continuous_activation
+            discrete_activation,
+            continuous_activation,
         ), self.temporal_encoder.activation_layout(
-            discrete_activation, continuous_activation
+            discrete_activation,
+            continuous_activation,
         )
 
 
@@ -726,5 +765,7 @@ class TimeSeriesBinEncoder(TransformerMixin, BaseEstimator):
         temporal_horizons: List,
     ) -> pd.DataFrame:
         return self.fit(static, temporal, temporal_horizons).transform(
-            static, temporal, temporal_horizons
+            static,
+            temporal,
+            temporal_horizons,
         )

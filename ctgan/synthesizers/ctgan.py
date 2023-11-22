@@ -7,12 +7,22 @@ import pandas as pd
 import torch
 from packaging import version
 from torch import optim
-from torch.nn import BatchNorm1d, Dropout, LeakyReLU, Linear, Module, ReLU, Sequential, functional
+from torch.nn import (
+    BatchNorm1d,
+    Dropout,
+    LeakyReLU,
+    Linear,
+    Module,
+    ReLU,
+    Sequential,
+    functional,
+)
 
 from ctgan.data_sampler import DataSampler
 from ctgan.data_transformer import DataTransformer
 from ctgan.synthesizers.base import BaseSynthesizer, random_state
-from ctgan.synthesizers.offsets import SBO, GHO
+from ctgan.synthesizers.offsets import GHO, SBO
+
 
 class Discriminator(Module):
     """Discriminator for the CTGANSynthesizer."""
@@ -30,7 +40,14 @@ class Discriminator(Module):
         seq += [Linear(dim, 1)]
         self.seq = Sequential(*seq)
 
-    def calc_gradient_penalty(self, real_data, fake_data, device='cpu', pac=10, lambda_=10):
+    def calc_gradient_penalty(
+        self,
+        real_data,
+        fake_data,
+        device="cpu",
+        pac=10,
+        lambda_=10,
+    ):
         """Compute the gradient penalty."""
         alpha = torch.rand(real_data.size(0) // pac, 1, 1, device=device)
         alpha = alpha.repeat(1, pac, real_data.size(1))
@@ -41,9 +58,12 @@ class Discriminator(Module):
         disc_interpolates = self(interpolates)
 
         gradients = torch.autograd.grad(
-            outputs=disc_interpolates, inputs=interpolates,
+            outputs=disc_interpolates,
+            inputs=interpolates,
             grad_outputs=torch.ones(disc_interpolates.size(), device=device),
-            create_graph=True, retain_graph=True, only_inputs=True
+            create_graph=True,
+            retain_graph=True,
+            only_inputs=True,
         )[0]
 
         gradients_view = gradients.view(-1, pac * real_data.size(1)).norm(2, dim=1) - 1
@@ -140,10 +160,23 @@ class CTGANSynthesizer(BaseSynthesizer):
             Defaults to ``True``.
     """
 
-    def __init__(self, embedding_dim=128, generator_dim=(256, 256), discriminator_dim=(256, 256),
-                 generator_lr=2e-4, generator_decay=1e-6, discriminator_lr=2e-4,
-                 discriminator_decay=1e-6, batch_size=500, discriminator_steps=1,
-                 log_frequency=True, verbose=False, epochs=300, pac=10, cuda=True):
+    def __init__(
+        self,
+        embedding_dim=128,
+        generator_dim=(256, 256),
+        discriminator_dim=(256, 256),
+        generator_lr=2e-4,
+        generator_decay=1e-6,
+        discriminator_lr=2e-4,
+        discriminator_decay=1e-6,
+        batch_size=500,
+        discriminator_steps=1,
+        log_frequency=True,
+        verbose=False,
+        epochs=300,
+        pac=10,
+        cuda=True,
+    ):
 
         assert batch_size % 2 == 0
 
@@ -164,11 +197,11 @@ class CTGANSynthesizer(BaseSynthesizer):
         self.pac = pac
 
         if not cuda or not torch.cuda.is_available():
-            device = 'cpu'
+            device = "cpu"
         elif isinstance(cuda, str):
             device = cuda
         else:
-            device = 'cuda'
+            device = "cuda"
 
         self._device = torch.device(device)
 
@@ -197,13 +230,18 @@ class CTGANSynthesizer(BaseSynthesizer):
         Returns:
             Sampled tensor of same shape as logits from the Gumbel-Softmax distribution.
         """
-        if version.parse(torch.__version__) < version.parse('1.2.0'):
+        if version.parse(torch.__version__) < version.parse("1.2.0"):
             for i in range(10):
-                transformed = functional.gumbel_softmax(logits, tau=tau, hard=hard,
-                                                        eps=eps, dim=dim)
+                transformed = functional.gumbel_softmax(
+                    logits,
+                    tau=tau,
+                    hard=hard,
+                    eps=eps,
+                    dim=dim,
+                )
                 if not torch.isnan(transformed).any():
                     return transformed
-            raise ValueError('gumbel_softmax returning NaN.')
+            raise ValueError("gumbel_softmax returning NaN.")
 
         return functional.gumbel_softmax(logits, tau=tau, hard=hard, eps=eps, dim=dim)
 
@@ -213,17 +251,19 @@ class CTGANSynthesizer(BaseSynthesizer):
         st = 0
         for column_info in self._transformer.output_info_list:
             for span_info in column_info:
-                if span_info.activation_fn == 'tanh':
+                if span_info.activation_fn == "tanh":
                     ed = st + span_info.dim
                     data_t.append(torch.tanh(data[:, st:ed]))
                     st = ed
-                elif span_info.activation_fn == 'softmax':
+                elif span_info.activation_fn == "softmax":
                     ed = st + span_info.dim
                     transformed = self._gumbel_softmax(data[:, st:ed], tau=0.2)
                     data_t.append(transformed)
                     st = ed
                 else:
-                    raise ValueError(f'Unexpected activation function {span_info.activation_fn}.')
+                    raise ValueError(
+                        f"Unexpected activation function {span_info.activation_fn}.",
+                    )
 
         return torch.cat(data_t, dim=1)
 
@@ -234,7 +274,7 @@ class CTGANSynthesizer(BaseSynthesizer):
         st_c = 0
         for column_info in self._transformer.output_info_list:
             for span_info in column_info:
-                if len(column_info) != 1 or span_info.activation_fn != 'softmax':
+                if len(column_info) != 1 or span_info.activation_fn != "softmax":
                     # not discrete column
                     st += span_info.dim
                 else:
@@ -243,7 +283,7 @@ class CTGANSynthesizer(BaseSynthesizer):
                     tmp = functional.cross_entropy(
                         data[:, st:ed],
                         torch.argmax(c[:, st_c:ed_c], dim=1),
-                        reduction='none'
+                        reduction="none",
                     )
                     loss.append(tmp)
                     st = ed
@@ -273,10 +313,10 @@ class CTGANSynthesizer(BaseSynthesizer):
                 if column < 0 or column >= train_data.shape[1]:
                     invalid_columns.append(column)
         else:
-            raise TypeError('``train_data`` should be either pd.DataFrame or np.array.')
+            raise TypeError("``train_data`` should be either pd.DataFrame or np.array.")
 
         if invalid_columns:
-            raise ValueError(f'Invalid columns found: {invalid_columns}')
+            raise ValueError(f"Invalid columns found: {invalid_columns}")
 
     @random_state
     def fit(self, train_data, discrete_columns=(), epochs=None):
@@ -297,9 +337,11 @@ class CTGANSynthesizer(BaseSynthesizer):
             epochs = self._epochs
         else:
             warnings.warn(
-                ('`epochs` argument in `fit` method has been deprecated and will be removed '
-                 'in a future version. Please pass `epochs` to the constructor instead'),
-                DeprecationWarning
+                (
+                    "`epochs` argument in `fit` method has been deprecated and will be removed "
+                    "in a future version. Please pass `epochs` to the constructor instead"
+                ),
+                DeprecationWarning,
             )
 
         self._transformer = DataTransformer()
@@ -310,30 +352,35 @@ class CTGANSynthesizer(BaseSynthesizer):
         self._data_sampler = DataSampler(
             train_data,
             self._transformer.output_info_list,
-            self._log_frequency)
+            self._log_frequency,
+        )
 
         data_dim = self._transformer.output_dimensions
 
         self._generator = Generator(
             self._embedding_dim + self._data_sampler.dim_cond_vec(),
             self._generator_dim,
-            data_dim
+            data_dim,
         ).to(self._device)
 
         discriminator = Discriminator(
             data_dim + self._data_sampler.dim_cond_vec(),
             self._discriminator_dim,
-            pac=self.pac
+            pac=self.pac,
         ).to(self._device)
 
         optimizerG = optim.Adam(
-            self._generator.parameters(), lr=self._generator_lr, betas=(0.5, 0.9),
-            weight_decay=self._generator_decay
+            self._generator.parameters(),
+            lr=self._generator_lr,
+            betas=(0.5, 0.9),
+            weight_decay=self._generator_decay,
         )
 
         optimizerD = optim.Adam(
-            discriminator.parameters(), lr=self._discriminator_lr,
-            betas=(0.5, 0.9), weight_decay=self._discriminator_decay
+            discriminator.parameters(),
+            lr=self._discriminator_lr,
+            betas=(0.5, 0.9),
+            weight_decay=self._discriminator_decay,
         )
 
         mean = torch.zeros(self._batch_size, self._embedding_dim, device=self._device)
@@ -349,7 +396,11 @@ class CTGANSynthesizer(BaseSynthesizer):
                     condvec = self._data_sampler.sample_condvec(self._batch_size)
                     if condvec is None:
                         c1, m1, col, opt = None, None, None, None
-                        real = self._data_sampler.sample_data(self._batch_size, col, opt)
+                        real = self._data_sampler.sample_data(
+                            self._batch_size,
+                            col,
+                            opt,
+                        )
                     else:
                         c1, m1, col, opt = condvec
                         c1 = torch.from_numpy(c1).to(self._device)
@@ -359,13 +410,16 @@ class CTGANSynthesizer(BaseSynthesizer):
                         perm = np.arange(self._batch_size)
                         np.random.shuffle(perm)
                         real = self._data_sampler.sample_data(
-                            self._batch_size, col[perm], opt[perm])
+                            self._batch_size,
+                            col[perm],
+                            opt[perm],
+                        )
                         c2 = c1[perm]
 
                     fake = self._generator(fakez)
                     fakeact = self._apply_activate(fake)
 
-                    real = torch.from_numpy(real.astype('float32')).to(self._device)
+                    real = torch.from_numpy(real.astype("float32")).to(self._device)
 
                     if c1 is not None:
                         fake_cat = torch.cat([fakeact, c1], dim=1)
@@ -378,7 +432,11 @@ class CTGANSynthesizer(BaseSynthesizer):
                     y_real = discriminator(real_cat)
 
                     pen = discriminator.calc_gradient_penalty(
-                        real_cat, fake_cat, self._device, self.pac)
+                        real_cat,
+                        fake_cat,
+                        self._device,
+                        self.pac,
+                    )
                     loss_d = -(torch.mean(y_real) - torch.mean(y_fake))
 
                     optimizerD.zero_grad()
@@ -417,12 +475,26 @@ class CTGANSynthesizer(BaseSynthesizer):
                 optimizerG.step()
 
             if self._verbose:
-                print(f'Epoch {i+1}, Loss G: {loss_g.detach().cpu(): .4f},'  # noqa: T001
-                      f'Loss D: {loss_d.detach().cpu(): .4f}',
-                      flush=True)
+                print(
+                    f"Epoch {i+1}, Loss G: {loss_g.detach().cpu(): .4f},"  # noqa: T001
+                    f"Loss D: {loss_d.detach().cpu(): .4f}",
+                    flush=True,
+                )
 
     @random_state
-    def sample(self, n, shift, shift_type=None, d_min=1, d_off=1, softness=1, mu_shift=0, std_shift=1, condition_column=None, condition_value=None):
+    def sample(
+        self,
+        n,
+        shift,
+        shift_type=None,
+        d_min=1,
+        d_off=1,
+        softness=1,
+        mu_shift=0,
+        std_shift=1,
+        condition_column=None,
+        condition_value=None,
+    ):
         """Sample data similar to the training data.
 
         Choosing a condition_column and condition_value will increase the probability of the
@@ -444,9 +516,15 @@ class CTGANSynthesizer(BaseSynthesizer):
 
         if condition_column is not None and condition_value is not None:
             condition_info = self._transformer.convert_column_name_value_to_id(
-                condition_column, condition_value)
-            global_condition_vec = self._data_sampler.generate_cond_from_condition_column_info(
-                condition_info, self._batch_size)
+                condition_column,
+                condition_value,
+            )
+            global_condition_vec = (
+                self._data_sampler.generate_cond_from_condition_column_info(
+                    condition_info,
+                    self._batch_size,
+                )
+            )
         else:
             global_condition_vec = None
 
@@ -454,25 +532,35 @@ class CTGANSynthesizer(BaseSynthesizer):
         data = []
         latents = []
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        
+
         for i in range(steps):
             mean = torch.zeros(self._batch_size, self._embedding_dim)
             std = mean + 1
             fakez = torch.normal(mean=mean, std=std).to(self._device)
 
-            if shift==True:
-                
-                assert shift_type!=None
+            if shift == True:
+
+                assert shift_type != None
 
                 fakez = fakez.cpu().detach().numpy()
-                if shift_type=='SBO':
-                    fakez = SBO(fakez, d_min=d_min, d_off=d_off, n_samples=fakez.shape[0], softness=softness)
-                if shift_type=='GHO':
-                    fakez = GHO(fakez, mu=mu_shift, std=std_shift, n_samples=fakez.shape[0])
+                if shift_type == "SBO":
+                    fakez = SBO(
+                        fakez,
+                        d_min=d_min,
+                        d_off=d_off,
+                        n_samples=fakez.shape[0],
+                        softness=softness,
+                    )
+                if shift_type == "GHO":
+                    fakez = GHO(
+                        fakez,
+                        mu=mu_shift,
+                        std=std_shift,
+                        n_samples=fakez.shape[0],
+                    )
                 fakez = torch.FloatTensor(fakez, device=device)
-                if shift_type=='VAR':
+                if shift_type == "VAR":
                     fakez = torch.normal(mean=mu_shift, std=std_shift).to(device)
-
 
             if global_condition_vec is not None:
                 condvec = global_condition_vec.copy()

@@ -101,7 +101,7 @@ class GAN(nn.Module):
         discriminator_weight_decay: float = 1e-3,
         discriminator_opt_betas: tuple = (0.9, 0.999),
         discriminator_extra_penalties: list = [
-            "gradient_penalty"
+            "gradient_penalty",
         ],  # "gradient_penalty", "identifiability_penalty"
         batch_size: int = 64,
         n_iter_print: int = 10,
@@ -215,11 +215,11 @@ class GAN(nn.Module):
                 cond = cond.reshape(-1, 1)
             if cond.shape[1] != self.n_units_conditional:
                 raise ValueError(
-                    "Expecting conditional with n_units = {self.n_units_conditional}"
+                    "Expecting conditional with n_units = {self.n_units_conditional}",
                 )
             if cond.shape[0] != X.shape[0]:
                 raise ValueError(
-                    "Expecting conditional with the same length as the dataset"
+                    "Expecting conditional with the same length as the dataset",
                 )
 
             condt = self._check_tensor(cond)
@@ -268,7 +268,9 @@ class GAN(nn.Module):
         return self.generator(fixed_noise)
 
     def dataloader(
-        self, X: torch.Tensor, cond: Optional[torch.Tensor] = None
+        self,
+        X: torch.Tensor,
+        cond: Optional[torch.Tensor] = None,
     ) -> DataLoader:
         if cond is None:
             dataset = TensorDataset(X)
@@ -322,7 +324,8 @@ class GAN(nn.Module):
         # Update G
         if self.clipping_value > 0:
             torch.nn.utils.clip_grad_norm_(
-                self.generator.parameters(), self.clipping_value
+                self.generator.parameters(),
+                self.clipping_value,
             )
         self.generator.optimizer.step()
 
@@ -385,7 +388,8 @@ class GAN(nn.Module):
             # Update D
             if self.clipping_value > 0:
                 torch.nn.utils.clip_grad_norm_(
-                    self.discriminator.parameters(), self.clipping_value
+                    self.discriminator.parameters(),
+                    self.clipping_value,
                 )
             self.discriminator.optimizer.step()
 
@@ -420,7 +424,7 @@ class GAN(nn.Module):
                     cond,
                     fake_labels_generator=fake_labels_generator,
                     true_labels_generator=true_labels_generator,
-                )
+                ),
             )
             G_losses.append(
                 self._train_epoch_generator(
@@ -428,7 +432,7 @@ class GAN(nn.Module):
                     cond,
                     fake_labels_generator=fake_labels_generator,
                     true_labels_generator=true_labels_generator,
-                )
+                ),
             )
 
         return np.mean(G_losses), np.mean(D_losses)
@@ -456,7 +460,7 @@ class GAN(nn.Module):
             # Check how the generator is doing by saving G's output on fixed_noise
             if (i + 1) % self.n_iter_print == 0:
                 log.debug(
-                    f"[{i}/{self.generator_n_iter}]\tLoss_D: {d_loss}\tLoss_G: {g_loss}"
+                    f"[{i}/{self.generator_n_iter}]\tLoss_D: {d_loss}\tLoss_G: {g_loss}",
                 )
 
         return self
@@ -531,7 +535,7 @@ class GAN(nn.Module):
     ) -> torch.Tensor:
         """Calculates the identifiability penalty"""
         return self.lambda_identifiability_penalty * torch.sqrt(
-            nn.MSELoss()(real_samples, fake_samples)
+            nn.MSELoss()(real_samples, fake_samples),
         )
 
     def _loss_cond(
@@ -553,7 +557,9 @@ class GAN(nn.Module):
         return loss
 
     def _append_optional_cond(
-        self, X: torch.Tensor, cond: Optional[torch.Tensor]
+        self,
+        X: torch.Tensor,
+        cond: Optional[torch.Tensor],
     ) -> torch.Tensor:
         if cond is None:
             return X

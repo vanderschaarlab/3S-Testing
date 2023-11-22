@@ -91,7 +91,8 @@ class TabularFlows(nn.Module):
         super(TabularFlows, self).__init__()
         self.columns = X.columns
         self.encoder = TabularEncoder(
-            max_clusters=encoder_max_clusters, whitelist=encoder_whitelist
+            max_clusters=encoder_max_clusters,
+            whitelist=encoder_whitelist,
         ).fit(X)
 
         self.model = NormalizingFlows(

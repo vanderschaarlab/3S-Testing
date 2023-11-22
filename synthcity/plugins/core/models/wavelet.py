@@ -66,7 +66,8 @@ class Wavelet(nn.Module):
         out = torch.concat([low] + high, axis=-1).to(self.device)
         if out.shape[-1] not in self.normalizer:
             self.normalizer[out.shape[-1]] = nn.Linear(
-                out.shape[-1], self.n_units_window
+                out.shape[-1],
+                self.n_units_window,
             ).to(self.device)
         out = self.normalizer[out.shape[-1]](out)
 

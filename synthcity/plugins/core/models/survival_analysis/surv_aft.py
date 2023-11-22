@@ -22,7 +22,10 @@ class WeibullAFTSurvivalAnalysis(SurvivalAnalysisPlugin):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def fit(
-        self, X: pd.DataFrame, T: pd.Series, Y: pd.Series
+        self,
+        X: pd.DataFrame,
+        T: pd.Series,
+        Y: pd.Series,
     ) -> "SurvivalAnalysisPlugin":
         "Training logic"
 
@@ -56,7 +59,9 @@ class WeibullAFTSurvivalAnalysis(SurvivalAnalysisPlugin):
             preds_.append(local_preds_)
 
         return pd.DataFrame(
-            np.concatenate(preds_, axis=0), columns=time_horizons, index=X.index
+            np.concatenate(preds_, axis=0),
+            columns=time_horizons,
+            index=X.index,
         )
 
     @staticmethod

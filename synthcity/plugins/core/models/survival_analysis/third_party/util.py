@@ -64,7 +64,7 @@ class Surv:
                 y[name_event] = event.astype(bool)
             else:
                 raise ValueError(
-                    "non-boolean event indicator must contain 0 and 1 only"
+                    "non-boolean event indicator must contain 0 and 1 only",
                 )
 
         return y
@@ -99,7 +99,9 @@ class Surv:
 
 
 def check_y_survival(
-    y_or_event: np.ndarray, *args: Any, allow_all_censored: bool = False
+    y_or_event: np.ndarray,
+    *args: Any,
+    allow_all_censored: bool = False,
 ) -> tuple:
     """Check that array correctly represents an outcome for survival analysis.
 
@@ -136,7 +138,7 @@ def check_y_survival(
         raise ValueError(
             "y must be a structured array with the first field"
             " being a binary class event indicator and the second field"
-            " the time of the event/censoring"
+            " the time of the event/censoring",
         )
 
     event_field, time_field = y.dtype.names
@@ -146,7 +148,7 @@ def check_y_survival(
     event = check_array(y_event, ensure_2d=False)
     if not np.issubdtype(event.dtype, np.bool_):
         raise ValueError(
-            f"elements of event indicator must be boolean, but found {event.dtype}"
+            f"elements of event indicator must be boolean, but found {event.dtype}",
         )
 
     if not (allow_all_censored or np.any(event)):
@@ -161,7 +163,7 @@ def check_y_survival(
         yt = check_array(yt, ensure_2d=False)
         if not np.issubdtype(yt.dtype, np.number):
             raise ValueError(
-                f"time must be numeric, but found {yt.dtype} for argument {i + 2}"
+                f"time must be numeric, but found {yt.dtype} for argument {i + 2}",
             )
 
         return_val.append(yt)

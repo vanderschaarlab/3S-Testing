@@ -65,7 +65,8 @@ class PrivBayes(Serializable):
         self._greedy_bayes(data)
         cpt_ = self._compute_conditional_distributions(data)
         self.model_ = BayesianNetwork.from_CPTs(
-            "PrivBayesNetwork", cpt_.values()
+            "PrivBayesNetwork",
+            cpt_.values(),
         ).as_dict()
         return self
 
@@ -87,7 +88,9 @@ class PrivBayes(Serializable):
             for node in nodes_remaining:
                 max_domain_size = self._max_domain_size(data, node)
                 max_parent_sets = self._max_parent_sets(
-                    data, nodes_selected, max_domain_size
+                    data,
+                    nodes_selected,
+                    max_domain_size,
                 )
 
                 # empty set - domain size of node violates theta_usefulness
@@ -97,7 +100,7 @@ class PrivBayes(Serializable):
                     ap_pairs.append(APPair(node, parents=[]))
                 else:
                     ap_pairs.extend(
-                        [APPair(node, parents=[p]) for p in max_parent_sets]
+                        [APPair(node, parents=[p]) for p in max_parent_sets],
                     )
 
             scores = self._compute_scores(data, ap_pairs)
@@ -118,7 +121,10 @@ class PrivBayes(Serializable):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _max_parent_sets(
-        self, data: pd.DataFrame, v: Set, max_domain_size: float
+        self,
+        data: pd.DataFrame,
+        v: Set,
+        max_domain_size: float,
     ) -> List[Set]:
         """Refer to algorithm 5 in paper - max parent set is 1) theta-useful and 2) maximal."""
         if max_domain_size < 1:
@@ -134,7 +140,9 @@ class PrivBayes(Serializable):
 
         parent_sets1 = self._max_parent_sets(data, v_without_x, max_domain_size)
         parent_sets2 = self._max_parent_sets(
-            data, v_without_x, max_domain_size / x_domain_size
+            data,
+            v_without_x,
+            max_domain_size / x_domain_size,
         )
 
         for z in parent_sets2:
@@ -205,7 +213,8 @@ class PrivBayes(Serializable):
                 attributes = [*pair.parents, pair.attribute]
 
             dp_cpt = dp_conditional_distribution(
-                data[attributes], epsilon=local_epsilon
+                data[attributes],
+                epsilon=local_epsilon,
             )
             cpt_[pair.attribute] = dp_cpt
         return cpt_
@@ -220,7 +229,8 @@ class PrivBayes(Serializable):
 
         # numpy.array to pandas.DataFrame with original column ordering
         data_synth = pd.DataFrame(
-            data_synth, columns=[c.attribute for c in self.network_]
+            data_synth,
+            columns=[c.attribute for c in self.network_],
         )
         return data_synth
 
@@ -285,7 +295,8 @@ class PrivBayes(Serializable):
 
         # substract not part of thomas - need to ensure alignment
         prob_joint, prob_independent = prob_joint.extend_and_reorder(
-            prob_joint, prob_independent
+            prob_joint,
+            prob_independent,
         )
         l1_distance = 0.5 * np.sum(np.abs(prob_joint.values - prob_independent.values))
         return l1_distance

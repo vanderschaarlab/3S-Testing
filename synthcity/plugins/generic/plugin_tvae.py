@@ -59,7 +59,7 @@ class TVAEPlugin(Plugin):
         batch_size: int = 500,
         n_iter: int = 2000,
         loss_factor: int = 1,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.model = TVAE(

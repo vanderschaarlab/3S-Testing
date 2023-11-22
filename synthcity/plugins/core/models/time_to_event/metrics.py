@@ -112,7 +112,9 @@ def c_index(T: pd.Series, E: pd.Series, pred_T: pd.Series) -> float:
     """
     try:
         return concordance_index(
-            event_times=T, predicted_scores=pred_T, event_observed=E
+            event_times=T,
+            predicted_scores=pred_T,
+            event_observed=E,
         )
     except BaseException:
         return 0

@@ -17,7 +17,9 @@ from sklearn.preprocessing import label_binarize
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def get_frequency(
-    X_gt: pd.DataFrame, X_synth: pd.DataFrame, n_histogram_bins: int = 10
+    X_gt: pd.DataFrame,
+    X_synth: pd.DataFrame,
+    n_histogram_bins: int = 10,
 ) -> dict:
     """Get percentual frequencies for each possible real categorical value.
 
@@ -104,16 +106,20 @@ def evaluate_auc(
         y_test = label_binarize(y_test, classes=classes)
 
         fpr["micro"], tpr["micro"], _ = roc_curve(
-            y_test.ravel(), y_pred_proba_tmp.ravel()
+            y_test.ravel(),
+            y_pred_proba_tmp.ravel(),
         )
         roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
         precision["micro"], recall["micro"], _ = precision_recall_curve(
-            y_test.ravel(), y_pred_proba_tmp.ravel()
+            y_test.ravel(),
+            y_pred_proba_tmp.ravel(),
         )
 
         average_precision["micro"] = average_precision_score(
-            y_test, y_pred_proba_tmp, average="micro"
+            y_test,
+            y_pred_proba_tmp,
+            average="micro",
         )
 
         aucroc = roc_auc["micro"]

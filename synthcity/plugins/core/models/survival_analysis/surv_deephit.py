@@ -39,7 +39,7 @@ class DeephitSurvivalAnalysis(SurvivalAnalysisPlugin):
         batch_norm: bool = False,
         random_state: int = 0,
         device: Any = DEVICE,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         enable_reproducible_results(random_state)
@@ -58,7 +58,10 @@ class DeephitSurvivalAnalysis(SurvivalAnalysisPlugin):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def fit(
-        self, X: pd.DataFrame, T: pd.Series, E: pd.Series
+        self,
+        X: pd.DataFrame,
+        T: pd.Series,
+        E: pd.Series,
     ) -> "SurvivalAnalysisPlugin":
         if (E.unique() == [0]).all():
             raise RuntimeError("The input contains only censored data")
@@ -68,7 +71,10 @@ class DeephitSurvivalAnalysis(SurvivalAnalysisPlugin):
         X = np.asarray(X).astype("float32")
 
         X_train, X_val, E_train, E_val, T_train, T_val = train_test_split(
-            X, E, T, random_state=42
+            X,
+            E,
+            T,
+            random_state=42,
         )
 
         def get_target(df: Any) -> Tuple:

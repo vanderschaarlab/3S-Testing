@@ -145,7 +145,8 @@ class DeepCoxPHTimeSeriesSurvival(TimeSeriesSurvivalPlugin):
             CategoricalDistribution(name="batch_size", choices=[100, 200, 500]),
             CategoricalDistribution(name="lr", choices=[1e-2, 1e-3, 1e-4]),
             CategoricalDistribution(
-                name="rnn_type", choices=["LSTM", "GRU", "RNN", "Transformer"]
+                name="rnn_type",
+                choices=["LSTM", "GRU", "RNN", "Transformer"],
             ),
             FloatDistribution(name="dropout", low=0.0, high=0.2),
         ]
@@ -291,7 +292,9 @@ class DeepRecurrentCoxPH(nn.Module):
         return 1 - self.predict_survival(x, t)
 
     def predict_survival(
-        self, x: np.ndarray, t: Optional[np.ndarray] = None
+        self,
+        x: np.ndarray,
+        t: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         r"""Returns the estimated survival probability at time \( t \),
           \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
@@ -309,7 +312,7 @@ class DeepRecurrentCoxPH(nn.Module):
             raise Exception(
                 "The model has not been fitted yet. Please fit the "
                 + "model using the `fit` method on some training data "
-                + "before calling `predict_survival`."
+                + "before calling `predict_survival`.",
             )
 
         x = self._preprocess_test_data(x)
@@ -398,14 +401,23 @@ class DeepRecurrentCoxPH(nn.Module):
         return -pll
 
     def fit_breslow(
-        self, x: torch.Tensor, t: torch.Tensor, e: torch.Tensor
+        self,
+        x: torch.Tensor,
+        t: torch.Tensor,
+        e: torch.Tensor,
     ) -> BreslowEstimator:
         return BreslowEstimator().fit(
-            self(x).detach().cpu().numpy(), e.numpy(), t.numpy()
+            self(x).detach().cpu().numpy(),
+            e.numpy(),
+            t.numpy(),
         )
 
     def train_step(
-        self, x: torch.Tensor, t: torch.Tensor, e: torch.Tensor, optimizer: Any
+        self,
+        x: torch.Tensor,
+        t: torch.Tensor,
+        e: torch.Tensor,
+        optimizer: Any,
     ) -> float:
 
         x, t, e = shuffle(x, t, e, random_state=self.random_state)
@@ -438,7 +450,10 @@ class DeepRecurrentCoxPH(nn.Module):
         return epoch_loss / n
 
     def test_step(
-        self, x: torch.Tensor, t: torch.Tensor, e: torch.Tensor
+        self,
+        x: torch.Tensor,
+        t: torch.Tensor,
+        e: torch.Tensor,
     ) -> torch.Tensor:
 
         with torch.no_grad():
@@ -447,7 +462,9 @@ class DeepRecurrentCoxPH(nn.Module):
         return loss / x.shape[0]
 
     def __interpolate_missing_times(
-        self, survival_predictions: np.ndarray, times: list
+        self,
+        survival_predictions: np.ndarray,
+        times: list,
     ) -> np.ndarray:
 
         nans = np.full(survival_predictions.shape[1], np.nan)

@@ -64,7 +64,8 @@ class BayesianNetworkPlugin(Plugin):
                 choices=["hillclimb", "pc", "tree_search"],
             ),
             CategoricalDistribution(
-                name="struct_learning_score", choices=["k2", "bdeu", "bic", "bds"]
+                name="struct_learning_score",
+                choices=["k2", "bdeu", "bic", "bds"],
             ),
         ]
 
@@ -73,7 +74,9 @@ class BayesianNetworkPlugin(Plugin):
 
         # add noise to the mixture means, but keep the continuous cluster
         noise = np.random.normal(
-            loc=0, scale=self.encoder_noise_scale, size=len(encoded)
+            loc=0,
+            scale=self.encoder_noise_scale,
+            size=len(encoded),
         )
         for col in encoded.columns:
             if col.endswith(".normalized"):
@@ -103,7 +106,8 @@ class BayesianNetworkPlugin(Plugin):
             )
         elif self.struct_learning_search_method == "pc":
             return estimators.PC(data=X).estimate(
-                scoring_method=scoring_method, show_progress=False
+                scoring_method=scoring_method,
+                show_progress=False,
             )
         elif self.struct_learning_search_method == "tree_search":
             return estimators.TreeSearch(data=X).estimate(show_progress=False)

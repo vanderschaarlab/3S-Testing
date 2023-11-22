@@ -120,7 +120,7 @@ class MultiActivationHead(nn.Module):
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         if X.shape[-1] != np.sum(self.activation_lengths):
             raise RuntimeError(
-                f"Shape mismatch for the activations: expected {np.sum(self.activation_lengths)}. Got shape {X.shape}."
+                f"Shape mismatch for the activations: expected {np.sum(self.activation_lengths)}. Got shape {X.shape}.",
             )
 
         split = 0
@@ -234,7 +234,7 @@ class MLP(nn.Module):
                     batch_norm=batch_norm,
                     nonlin=nonlin,
                     device=device,
-                )
+                ),
             )
             n_units_hidden += int(residual) * n_units_in
 
@@ -248,7 +248,7 @@ class MLP(nn.Module):
                         nonlin=nonlin,
                         dropout=dropout,
                         device=device,
-                    )
+                    ),
                 )
                 n_units_hidden += int(residual) * n_units_hidden
 
@@ -266,12 +266,12 @@ class MLP(nn.Module):
 
             if total_nonlin_len != n_units_out:
                 raise RuntimeError(
-                    f"Shape mismatch for the output layer. Expected length {n_units_out}, but got {nonlin_out} with length {total_nonlin_len}"
+                    f"Shape mismatch for the output layer. Expected length {n_units_out}, but got {nonlin_out} with length {total_nonlin_len}",
                 )
             layers.append(MultiActivationHead(activations, device=device))
         elif self.task_type == "classification":
             layers.append(
-                MultiActivationHead([(nn.Softmax(dim=-1), n_units_out)], device=device)
+                MultiActivationHead([(nn.Softmax(dim=-1), n_units_out)], device=device),
             )
 
         self.model = nn.Sequential(*layers).to(self.device)
@@ -382,7 +382,8 @@ class MLP(nn.Module):
         train_size = int(0.8 * len(dataset))
         test_size = len(dataset) - train_size
         train_dataset, test_dataset = torch.utils.data.random_split(
-            dataset, [train_size, test_size]
+            dataset,
+            [train_size, test_size],
         )
         loader = DataLoader(train_dataset, batch_size=self.batch_size, pin_memory=False)
 
@@ -414,7 +415,7 @@ class MLP(nn.Module):
 
                     if i % self.n_iter_print == 0:
                         log.debug(
-                            f"Epoch: {i}, loss: {val_loss}, train_loss: {train_loss}"
+                            f"Epoch: {i}, loss: {val_loss}, train_loss: {train_loss}",
                         )
 
         return self

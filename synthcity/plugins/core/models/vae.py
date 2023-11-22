@@ -53,7 +53,9 @@ class Encoder(nn.Module):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def forward(
-        self, X: Tensor, cond: Optional[torch.Tensor] = None
+        self,
+        X: Tensor,
+        cond: Optional[torch.Tensor] = None,
     ) -> Tuple[Tensor, Tensor]:
         data = self._append_optional_cond(X, cond)
         shared = self.model(data)
@@ -62,7 +64,9 @@ class Encoder(nn.Module):
         return mu, logvar
 
     def _append_optional_cond(
-        self, X: torch.Tensor, cond: Optional[torch.Tensor]
+        self,
+        X: torch.Tensor,
+        cond: Optional[torch.Tensor],
     ) -> torch.Tensor:
         if cond is None:
             return X
@@ -109,7 +113,9 @@ class Decoder(nn.Module):
         return self.model(data)
 
     def _append_optional_cond(
-        self, X: torch.Tensor, cond: Optional[torch.Tensor]
+        self,
+        X: torch.Tensor,
+        cond: Optional[torch.Tensor],
     ) -> torch.Tensor:
         if cond is None:
             return X
@@ -268,11 +274,11 @@ class VAE(nn.Module):
                 cond = cond.reshape(-1, 1)
             if cond.shape[1] != self.n_units_conditional:
                 raise ValueError(
-                    "Expecting conditional with n_units = {self.n_units_conditional}"
+                    "Expecting conditional with n_units = {self.n_units_conditional}",
                 )
             if cond.shape[0] != X.shape[0]:
                 raise ValueError(
-                    "Expecting conditional with the same length as the dataset"
+                    "Expecting conditional with the same length as the dataset",
                 )
 
             condt = self._check_tensor(cond)
@@ -404,7 +410,10 @@ class VAE(nn.Module):
 
         if self.loss_strategy == "robust_divergence":
             return self._loss_function_robust_divergence(
-                reconstructed, real, mu, logvar
+                reconstructed,
+                real,
+                mu,
+                logvar,
             )
 
         return self._loss_function_standard(reconstructed, real, mu, logvar)
@@ -429,14 +438,15 @@ class VAE(nn.Module):
                 loss.append(discr_loss)
             else:
                 cont_loss = nn.functional.mse_loss(
-                    reconstructed[:, step:step_end], real[:, step:step_end]
+                    reconstructed[:, step:step_end],
+                    real[:, step:step_end],
                 )
                 loss.append(cont_loss)
             step = step_end
 
         if step != reconstructed.size()[1]:
             raise RuntimeError(
-                f"Invalid reconstructed features. Expected {step}, got {reconstructed.shape}"
+                f"Invalid reconstructed features. Expected {step}, got {reconstructed.shape}",
             )
 
         reconstruction_loss = torch.sum(torch.FloatTensor(loss))
@@ -476,7 +486,7 @@ class VAE(nn.Module):
                     reconstructed[:, step:step_end] - real[:, step:step_end]
                 ) ** 2
                 cont_loss = (1 / (2 * np.pi * std**2) ** (beta / 2)) * torch.exp(
-                    cont_loss
+                    cont_loss,
                 )
                 cont_loss = torch.sum(cont_loss)
                 cont_loss = (-(beta + 1) / (beta * N)) * cont_loss + (beta + 1) / beta
@@ -487,7 +497,7 @@ class VAE(nn.Module):
 
         if step != reconstructed.size()[1]:
             raise RuntimeError(
-                f"Invalid reconstructed features. Expected {step}, got {reconstructed.shape}"
+                f"Invalid reconstructed features. Expected {step}, got {reconstructed.shape}",
             )
 
         reconstruction_loss = torch.sum(torch.FloatTensor(loss))

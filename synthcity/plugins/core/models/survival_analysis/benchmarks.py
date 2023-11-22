@@ -154,7 +154,10 @@ def evaluate_survival_model(
     if n_folds == 1:
         cv_idx = 0
         X_train, X_test, T_train, T_test, Y_train, Y_test = train_test_split(
-            X, T, Y, random_state=random_state
+            X,
+            T,
+            Y,
+            random_state=random_state,
         )
         local_time_horizons = [t for t in time_horizons if t > np.min(T_test)]
 
@@ -179,10 +182,16 @@ def evaluate_survival_model(
                 cv_idx = 0
 
                 X_horizon, T_horizon, Y_horizon = generate_dataset_for_horizon(
-                    X, T, Y, time_horizons[k]
+                    X,
+                    T,
+                    Y,
+                    time_horizons[k],
                 )
                 X_train, X_test, T_train, T_test, Y_train, Y_test = train_test_split(
-                    X_horizon, T_horizon, Y_horizon, random_state=random_state
+                    X_horizon,
+                    T_horizon,
+                    Y_horizon,
+                    random_state=random_state,
                 )
 
                 metric = "aucroc"
@@ -236,7 +245,10 @@ def evaluate_survival_model(
                 cv_idx = 0
 
                 X_horizon, T_horizon, Y_horizon = generate_dataset_for_horizon(
-                    X, T, Y, time_horizons[k]
+                    X,
+                    T,
+                    Y,
+                    time_horizons[k],
                 )
                 for train_index, test_index in skf.split(X_horizon, Y_horizon):
 

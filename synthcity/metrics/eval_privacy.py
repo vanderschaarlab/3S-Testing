@@ -50,7 +50,9 @@ class kAnonymization(PrivacyEvaluator):
             if len(X) / n_clusters < 10:
                 continue
             cluster = KMeans(
-                n_clusters=n_clusters, init="k-means++", random_state=0
+                n_clusters=n_clusters,
+                init="k-means++",
+                random_state=0,
             ).fit(X[features])
             counts: dict = Counter(cluster.labels_)
             values.append(np.min(list(counts.values())))
@@ -89,7 +91,7 @@ class lDiversityDistinct(PrivacyEvaluator):
             if len(X) / n_clusters < 10:
                 continue
             model = KMeans(n_clusters=n_clusters, init="k-means++", random_state=0).fit(
-                X[features]
+                X[features],
             )
             clusters = model.predict(X.dataframe()[features])
             clusters_df = pd.Series(clusters, index=X.dataframe().index)
@@ -131,7 +133,7 @@ class kMap(PrivacyEvaluator):
             if len(X_gt) / n_clusters < 10:
                 continue
             model = KMeans(n_clusters=n_clusters, init="k-means++", random_state=0).fit(
-                X_gt[features]
+                X_gt[features],
             )
             clusters = model.predict(X_syn[features])
             counts: dict = Counter(clusters)
@@ -166,7 +168,7 @@ class DeltaPresence(PrivacyEvaluator):
             if len(X_gt) / n_clusters < 10:
                 continue
             model = KMeans(n_clusters=n_clusters, init="k-means++", random_state=0).fit(
-                X_gt[features]
+                X_gt[features],
             )
             clusters = model.predict(X_syn[features])
             synth_counts: dict = Counter(clusters)
@@ -227,7 +229,7 @@ class IdentifiabilityScore(PrivacyEvaluator):
         W = np.zeros(
             [
                 x_dim,
-            ]
+            ],
         )
 
         for i in range(x_dim):

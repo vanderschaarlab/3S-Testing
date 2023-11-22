@@ -68,7 +68,7 @@ class CopulaGANPlugin(Plugin):
         batch_size: int = 500,
         discriminator_steps: int = 1,
         n_iter: int = 300,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -102,7 +102,10 @@ class CopulaGANPlugin(Plugin):
             IntegerDistribution(name="embedding_n_units", low=100, high=500, step=50),
             IntegerDistribution(name="generator_n_units", low=100, high=500, step=50),
             IntegerDistribution(
-                name="discriminator_n_units", low=100, high=500, step=50
+                name="discriminator_n_units",
+                low=100,
+                high=500,
+                step=50,
             ),
             IntegerDistribution(name="generator_n_layers", low=1, high=3),
             IntegerDistribution(name="discriminator_n_layers", low=1, high=3),

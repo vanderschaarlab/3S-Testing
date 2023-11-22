@@ -1,16 +1,12 @@
-import numpy as np
-from copy import deepcopy
-import random
-from sklearn.model_selection import train_test_split
 import logging
-
-import pandas as pd
-import matplotlib.pyplot as plt
-
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
+import random
 from copy import deepcopy
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
 
 def load_seer_cutract_dataset(name="seer", seed=42):
     import sklearn
@@ -92,16 +88,17 @@ def load_seer_cutract_dataset(name="seer", seed=42):
         n_samples = 10000
     else:
         n_samples = 1000
-        
+
     df = pd.concat(
         [
             df_dead.sample(n_samples, random_state=seed),
             df_survive.sample(n_samples, random_state=seed),
-        ]
+        ],
     )
     df = sklearn.utils.shuffle(df, random_state=seed)
     df = df.reset_index(drop=True)
     return df[features], df[label]
+
 
 def load_adult_data(split_size=0.3):
     """
@@ -245,7 +242,7 @@ def load_adult_data(split_size=0.3):
     salary_0_idx = df.query("sex == 0 & salary == 0")
 
     X = df.drop(["salary"], axis=1)
-    X = X.drop('fnlwgt', axis=1)
+    X = X.drop("fnlwgt", axis=1)
     y = df["salary"]
 
     # Creation of Train and Test dataset
@@ -260,129 +257,162 @@ def load_adult_data(split_size=0.3):
     return X_train, X_test, y_train, y_test, X, y
 
 
-
 def load_covid_dataset(seed=42, drop_SG_UF_NOT=True):
 
     df_ALL = pd.read_csv("../data/covid.csv")
-    x_ids = [2,3,5, 6, 7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33]
-    df = df_ALL.iloc[:,x_ids]
-    y = df_ALL.iloc[:,0]
+    x_ids = [
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+    ]
+    df = df_ALL.iloc[:, x_ids]
+    y = df_ALL.iloc[:, 0]
 
     if drop_SG_UF_NOT:
-        df= df.drop(columns=['Race', 'SG_UF_NOT'])
+        df = df.drop(columns=["Race", "SG_UF_NOT"])
     else:
-        df= df.drop(columns=['Race'])
+        df = df.drop(columns=["Race"])
 
-    df['y'] = y 
+    df["y"] = y
     df.columns
 
-    races = ['Branca', 'Preta', 'Amarela', 'Parda', 'Indigena']
+    races = ["Branca", "Preta", "Amarela", "Parda", "Indigena"]
     regions = []
     for i in range(df.shape[0]):
-        if df.iloc[i][races[0]]==1:
+        if df.iloc[i][races[0]] == 1:
             regions.append(1)
-        if df.iloc[i][races[1]]==1:
+        if df.iloc[i][races[1]] == 1:
             regions.append(2)
-        if df.iloc[i][races[2]]==1:
+        if df.iloc[i][races[2]] == 1:
             regions.append(3)
-        if df.iloc[i][races[3]]==1:
+        if df.iloc[i][races[3]] == 1:
             regions.append(4)
-        if df.iloc[i][races[4]]==1:
+        if df.iloc[i][races[4]] == 1:
             regions.append(5)
 
-    df['region']=regions
+    df["region"] = regions
 
-
-    ages = ['Age_40', 'Age_40_50', 'Age_50_60', 'Age_60_70','Age_70']
+    ages = ["Age_40", "Age_40_50", "Age_50_60", "Age_60_70", "Age_70"]
     regions = []
     for i in range(df.shape[0]):
-        if df.iloc[i][ages[0]]==1:
+        if df.iloc[i][ages[0]] == 1:
             regions.append(1)
-        if df.iloc[i][ages[1]]==1:
+        if df.iloc[i][ages[1]] == 1:
             regions.append(2)
-        if df.iloc[i][ages[2]]==1:
+        if df.iloc[i][ages[2]] == 1:
             regions.append(3)
-        if df.iloc[i][ages[3]]==1:
+        if df.iloc[i][ages[3]] == 1:
             regions.append(4)
-        if df.iloc[i][ages[4]]==1:
+        if df.iloc[i][ages[4]] == 1:
             regions.append(5)
 
-    df['age_group']=regions
+    df["age_group"] = regions
 
-    df= df.drop(columns=races)
-    df= df.drop(columns=ages)
-    
-    return df.drop(columns=['y']), df['y'], df
+    df = df.drop(columns=races)
+    df = df.drop(columns=ages)
 
+    return df.drop(columns=["y"]), df["y"], df
 
 
 def load_drug_dataset():
     from sklearn.impute import SimpleImputer
-    data = pd.read_csv('../data/Drug_Consumption.csv')
 
-    #Drop overclaimers, Semer, and other nondrug columns
-    data = data.drop(data[data['Semer'] != 'CL0'].index)
-    data = data.drop(['Semer', 'Caff', 'Choc'], axis=1)
+    data = pd.read_csv("../data/Drug_Consumption.csv")
+
+    # Drop overclaimers, Semer, and other nondrug columns
+    data = data.drop(data[data["Semer"] != "CL0"].index)
+    data = data.drop(["Semer", "Caff", "Choc"], axis=1)
     data.reset_index()
 
     # Binary encode gender
-    data['Gender'] = data['Gender'].apply(lambda x: 1 if x == 'M' else 0)
+    data["Gender"] = data["Gender"].apply(lambda x: 1 if x == "M" else 0)
 
     # Encode ordinal features
-    ordinal_features = ['Age', 
-                        'Education',
-                        'Alcohol',
-                        'Amyl',
-                        'Amphet',
-                        'Benzos',
-                        'Cannabis',
-                        'Coke',
-                        'Crack',
-                        'Ecstasy',
-                        'Heroin',
-                        'Ketamine',
-                        'Legalh',
-                        'LSD',
-                        'Meth',
-                        'Mushrooms',
-                        'Nicotine',
-                        'VSA'    ]
+    ordinal_features = [
+        "Age",
+        "Education",
+        "Alcohol",
+        "Amyl",
+        "Amphet",
+        "Benzos",
+        "Cannabis",
+        "Coke",
+        "Crack",
+        "Ecstasy",
+        "Heroin",
+        "Ketamine",
+        "Legalh",
+        "LSD",
+        "Meth",
+        "Mushrooms",
+        "Nicotine",
+        "VSA",
+    ]
 
     # Define ordinal orderings
     ordinal_orderings = [
-        ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'],
-        ['Left school before 16 years', 
-        'Left school at 16 years', 
-        'Left school at 17 years', 
-        'Left school at 18 years',
-        'Some college or university, no certificate or degree',
-        'Professional certificate/ diploma',
-        'University degree',
-        'Masters degree',
-        'Doctorate degree'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6'],
-        ['CL0','CL1','CL2','CL3','CL4','CL5','CL6']
+        ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"],
+        [
+            "Left school before 16 years",
+            "Left school at 16 years",
+            "Left school at 17 years",
+            "Left school at 18 years",
+            "Some college or university, no certificate or degree",
+            "Professional certificate/ diploma",
+            "University degree",
+            "Masters degree",
+            "Doctorate degree",
+        ],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
+        ["CL0", "CL1", "CL2", "CL3", "CL4", "CL5", "CL6"],
     ]
 
     # Nominal features
-    nominal_features = ['Country',
-                        'Ethnicity']
+    nominal_features = ["Country", "Ethnicity"]
 
-    #Create function for ordinal encoding
+    # Create function for ordinal encoding
     def ordinal_encoder(df, columns, ordering):
         df = df.copy()
         for column, ordering in zip(ordinal_features, ordinal_orderings):
@@ -392,29 +422,35 @@ def load_drug_dataset():
     def cat_converter(df, columns):
         df = df.copy()
         for column in columns:
-            df[column] = df[column].astype('category').cat.codes
+            df[column] = df[column].astype("category").cat.codes
         return df
 
     data = ordinal_encoder(data, ordinal_features, ordinal_orderings)
     data = cat_converter(data, nominal_features)
 
     nic_df = data.copy()
-    nic_df['y'] = nic_df['Nicotine'].apply(lambda x: 1 if x not in [0,1] else 0)
-    nic_df = nic_df.drop(['ID','Nicotine'], axis=1)
+    nic_df["y"] = nic_df["Nicotine"].apply(lambda x: 1 if x not in [0, 1] else 0)
+    nic_df = nic_df.drop(["ID", "Nicotine"], axis=1)
 
-    return nic_df.drop(columns=['y']), nic_df['y'], nic_df
+    return nic_df.drop(columns=["y"]), nic_df["y"], nic_df
 
 
 def load_bank_dataset(seed=0):
     import pandas as pd
 
-    df = pd.read_csv('../data/Base.csv')
-    for col in ["payment_type", "employment_status", "housing_status", "source", "device_os"]:
+    df = pd.read_csv("../data/Base.csv")
+    for col in [
+        "payment_type",
+        "employment_status",
+        "housing_status",
+        "source",
+        "device_os",
+    ]:
         df[col] = df[col].astype("category").cat.codes
 
-    df.rename(columns={'fraud_bool': 'y'}, inplace=True)
+    df.rename(columns={"fraud_bool": "y"}, inplace=True)
 
-    mask = df['y'] == True
+    mask = df["y"] == True
     df_fraud = df[mask]
     df_no = df[~mask]
 
@@ -423,25 +459,43 @@ def load_bank_dataset(seed=0):
         [
             df_fraud.sample(n_samples, random_state=seed),
             df_no.sample(n_samples, random_state=seed),
-        ]
+        ],
     )
     from sklearn.utils import shuffle
+
     df = shuffle(df, random_state=seed)
 
-    return df.drop(columns=['y']), df['y'], df
+    return df.drop(columns=["y"]), df["y"], df
 
 
 def load_support_dataset():
 
-    df = pd.read_csv('../data/support_data.csv')
+    df = pd.read_csv("../data/support_data.csv")
 
-    df['salary'] = df[['under $11k', '$11-$25k', '$25-$50k', '>$50k']].values.argmax(1)+1
+    df["salary"] = (
+        df[["under $11k", "$11-$25k", "$25-$50k", ">$50k"]].values.argmax(1) + 1
+    )
 
-    df['race'] =df[[ 'white','black', 'asian', 'hispanic']].values.argmax(1)+1
+    df["race"] = df[["white", "black", "asian", "hispanic"]].values.argmax(1) + 1
 
-    df.drop(['under $11k', '$11-$25k', '$25-$50k', '>$50k', 'white','black', 'asian', 'd.time', 'Unnamed: 0', 'hispanic'], axis=1, inplace=True)
+    df.drop(
+        [
+            "under $11k",
+            "$11-$25k",
+            "$25-$50k",
+            ">$50k",
+            "white",
+            "black",
+            "asian",
+            "d.time",
+            "Unnamed: 0",
+            "hispanic",
+        ],
+        axis=1,
+        inplace=True,
+    )
 
     # rename dataframe column
-    df.rename(columns={'death': 'y'}, inplace=True)
+    df.rename(columns={"death": "y"}, inplace=True)
 
-    return df.drop(columns=['y']), df['y'], df
+    return df.drop(columns=["y"]), df["y"], df

@@ -35,12 +35,12 @@ class Serializable:
 
         if derived_module_path is not None:
             relative_path = Path(
-                os.path.relpath(derived_module_path, start=module_path.parent)
+                os.path.relpath(derived_module_path, start=module_path.parent),
             )
 
             if not (module_parent_path / relative_path).resolve().exists():
                 raise RuntimeError(
-                    f"cannot find relative module path for {relative_path.resolve()}"
+                    f"cannot find relative module path for {relative_path.resolve()}",
                 )
 
             self.module_relative_path = relative_path
@@ -84,7 +84,7 @@ class Serializable:
 
         if representation["version"] != Serializable.version():
             raise RuntimeError(
-                f"Invalid synthcity API version. Current version is {Serializable.version()}, but the object was serialized using version {representation['version']}"
+                f"Invalid synthcity API version. Current version is {Serializable.version()}, but the object was serialized using version {representation['version']}",
             )
 
         if representation["module_relative_path"] is not None:
@@ -94,7 +94,8 @@ class Serializable:
                 raise RuntimeError(f"Unknown module path {module_path}")
 
             spec = importlib.util.spec_from_file_location(
-                representation["module_name"], module_path
+                representation["module_name"],
+                module_path,
             )
 
             if not isinstance(spec.loader, Loader):

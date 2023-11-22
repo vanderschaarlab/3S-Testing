@@ -55,7 +55,9 @@ class InverseKLDivergence(StatisticalEvaluator):
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def evaluate(self, X_gt: DataLoader, X_syn: DataLoader) -> Dict:
         freqs = get_frequency(
-            X_gt.dataframe(), X_syn.dataframe(), n_histogram_bins=self._n_histogram_bins
+            X_gt.dataframe(),
+            X_syn.dataframe(),
+            n_histogram_bins=self._n_histogram_bins,
         )
         res = []
         for col in X_gt.columns:
@@ -120,7 +122,9 @@ class ChiSquaredTest(StatisticalEvaluator):
     def evaluate(self, X_gt: DataLoader, X_syn: DataLoader) -> Dict:
         res = []
         freqs = get_frequency(
-            X_gt.dataframe(), X_syn.dataframe(), n_histogram_bins=self._n_histogram_bins
+            X_gt.dataframe(),
+            X_syn.dataframe(),
+            n_histogram_bins=self._n_histogram_bins,
         )
 
         for col in X_gt.columns:
@@ -191,13 +195,25 @@ class MaximumMeanDiscrepancy(StatisticalEvaluator):
             gamma = 1
             coef0 = 0
             XX = metrics.pairwise.polynomial_kernel(
-                X_gt.numpy(), X_gt.numpy(), degree, gamma, coef0
+                X_gt.numpy(),
+                X_gt.numpy(),
+                degree,
+                gamma,
+                coef0,
             )
             YY = metrics.pairwise.polynomial_kernel(
-                X_syn.numpy(), X_syn.numpy(), degree, gamma, coef0
+                X_syn.numpy(),
+                X_syn.numpy(),
+                degree,
+                gamma,
+                coef0,
             )
             XY = metrics.pairwise.polynomial_kernel(
-                X_gt.numpy(), X_syn.numpy(), degree, gamma, coef0
+                X_gt.numpy(),
+                X_syn.numpy(),
+                degree,
+                gamma,
+                coef0,
             )
             score = XX.mean() + YY.mean() - 2 * XY.mean()
         else:
@@ -242,7 +258,7 @@ class InverseCDFDistance(StatisticalEvaluator):
             syn_percentiles = predictor.cdf(np.array(syn_col))
             gt_percentiles = predictor.cdf(np.array(gt_col))
             distances.append(
-                np.mean(abs(syn_percentiles - gt_percentiles[1]) ** self.p)
+                np.mean(abs(syn_percentiles - gt_percentiles[1]) ** self.p),
             )
 
         return {"marginal": float(self.reduction()(distances))}
@@ -281,7 +297,8 @@ class JensenShannonDistance(StatisticalEvaluator):
             X_gt_bin, gt_bins = pd.cut(X_gt[col], bins=local_bins, retbins=True)
             X_syn_bin = pd.cut(X_syn[col], bins=gt_bins)
             stats_gt[col], stats_syn[col] = X_gt_bin.value_counts(
-                dropna=False, normalize=self.normalize
+                dropna=False,
+                normalize=self.normalize,
             ).align(
                 X_syn_bin.value_counts(dropna=False, normalize=self.normalize),
                 join="outer",
@@ -308,7 +325,10 @@ class FeatureCorrelation(StatisticalEvaluator):
     """Evaluate the correlation/strength-of-association of features in data-set with both categorical and continuous features using: * Pearson's R for continuous-continuous cases ** Cramer's V or Theil's U for categorical-categorical cases."""
 
     def __init__(
-        self, nom_nom_assoc: str = "theil", nominal_columns: str = "auto", **kwargs: Any
+        self,
+        nom_nom_assoc: str = "theil",
+        nominal_columns: str = "auto",
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -422,7 +442,9 @@ class PRDCScore(StatisticalEvaluator):
         return self._compute_prdc(X.numpy(), X_syn.numpy())
 
     def _compute_pairwise_distance(
-        self, data_x: np.ndarray, data_y: Optional[np.ndarray] = None
+        self,
+        data_x: np.ndarray,
+        data_y: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
         Args:
@@ -438,7 +460,10 @@ class PRDCScore(StatisticalEvaluator):
         return dists
 
     def _get_kth_value(
-        self, unsorted: np.ndarray, k: int, axis: int = -1
+        self,
+        unsorted: np.ndarray,
+        k: int,
+        axis: int = -1,
     ) -> np.ndarray:
         """
         Args:
@@ -453,7 +478,9 @@ class PRDCScore(StatisticalEvaluator):
         return kth_values
 
     def _compute_nearest_neighbour_distances(
-        self, input_features: np.ndarray, nearest_k: int
+        self,
+        input_features: np.ndarray,
+        nearest_k: int,
     ) -> np.ndarray:
         """
         Args:
@@ -467,7 +494,9 @@ class PRDCScore(StatisticalEvaluator):
         return radii
 
     def _compute_prdc(
-        self, real_features: np.ndarray, fake_features: np.ndarray
+        self,
+        real_features: np.ndarray,
+        fake_features: np.ndarray,
     ) -> Dict:
         """
         Computes precision, recall, density, and coverage given two manifolds.
@@ -479,13 +508,16 @@ class PRDCScore(StatisticalEvaluator):
         """
 
         real_nearest_neighbour_distances = self._compute_nearest_neighbour_distances(
-            real_features, self.nearest_k
+            real_features,
+            self.nearest_k,
         )
         fake_nearest_neighbour_distances = self._compute_nearest_neighbour_distances(
-            fake_features, self.nearest_k
+            fake_features,
+            self.nearest_k,
         )
         distance_real_fake = self._compute_pairwise_distance(
-            real_features, fake_features
+            real_features,
+            fake_features,
         )
 
         precision = (
@@ -516,7 +548,10 @@ class PRDCScore(StatisticalEvaluator):
         ).mean()
 
         return dict(
-            precision=precision, recall=recall, density=density, coverage=coverage
+            precision=precision,
+            recall=recall,
+            density=density,
+            coverage=coverage,
         )
 
 
@@ -539,7 +574,7 @@ class AlphaPrecision(StatisticalEvaluator):
         X_syn: np.ndarray,
     ) -> Tuple:
         assert len(X) == len(
-            X_syn
+            X_syn,
         ), "The real and synthetic data mush have the same length"
 
         emb_center = np.mean(X, axis=0)
@@ -570,7 +605,7 @@ class AlphaPrecision(StatisticalEvaluator):
         real_synth_closest = X_syn[real_to_synth_args]
 
         real_synth_closest_d = np.sqrt(
-            np.sum((real_synth_closest - synth_center) ** 2, axis=1)
+            np.sum((real_synth_closest - synth_center) ** 2, axis=1),
         )
         closest_synth_Radii = np.quantile(real_synth_closest_d, alphas)
 
@@ -582,7 +617,7 @@ class AlphaPrecision(StatisticalEvaluator):
                 (
                     (real_to_synth <= real_to_real)
                     * (real_synth_closest_d <= closest_synth_Radii[k])
-                )
+                ),
             )
 
             alpha_precision_curve.append(alpha_precision)
@@ -594,14 +629,14 @@ class AlphaPrecision(StatisticalEvaluator):
         authenticity = np.mean(authen)
 
         Delta_precision_alpha = 1 - np.sum(
-            np.abs(np.array(alphas) - np.array(alpha_precision_curve))
+            np.abs(np.array(alphas) - np.array(alpha_precision_curve)),
         ) / np.sum(alphas)
 
         if Delta_precision_alpha < 0:
             raise RuntimeError("negative value detected for Delta_precision_alpha")
 
         Delta_coverage_beta = 1 - np.sum(
-            np.abs(np.array(alphas) - np.array(beta_coverage_curve))
+            np.abs(np.array(alphas) - np.array(beta_coverage_curve)),
         ) / np.sum(alphas)
 
         if Delta_coverage_beta < 0:
@@ -659,18 +694,19 @@ class SurvivalKMDistance(StatisticalEvaluator):
     ) -> Dict:
         if self._task_type != "survival_analysis":
             raise RuntimeError(
-                f"The metric is valid only for survival analysis tasks, but got {self._task_type}"
+                f"The metric is valid only for survival analysis tasks, but got {self._task_type}",
             )
         if X.type() != "survival_analysis" or X_syn.type() != "survival_analysis":
             raise RuntimeError(
-                f"The metric is valid only for survival analysis tasks, but got datasets {X.type()} and {X_syn.type()}"
+                f"The metric is valid only for survival analysis tasks, but got datasets {X.type()} and {X_syn.type()}",
             )
 
         _, real_T, real_E = X.unpack()
         _, syn_T, syn_E = X_syn.unpack()
 
         optimism, abs_optimism, sightedness = nonparametric_distance(
-            (real_T, real_E), (syn_T, syn_E)
+            (real_T, real_E),
+            (syn_T, syn_E),
         )
 
         return {

@@ -47,7 +47,12 @@ class ScoreEvaluator:
         self.pending_tasks: list = []
 
     def add(
-        self, key: str, result: float, failed: int, duration: float, direction: str
+        self,
+        key: str,
+        result: float,
+        failed: int,
+        duration: float,
+        direction: str,
     ) -> None:
         if key not in self.scores:
             self.scores[key] = {
@@ -61,7 +66,12 @@ class ScoreEvaluator:
         self.scores[key]["values"].append(result)
 
     def add_multiple(
-        self, key: str, results: Dict, failed: int, duration: float, direction: str
+        self,
+        key: str,
+        results: Dict,
+        failed: int,
+        duration: float,
+        direction: str,
     ) -> None:
         for subkey in results:
             self.add(f"{key}.{subkey}", results[subkey], failed, duration, direction)
@@ -127,7 +137,7 @@ class ScoreEvaluator:
                                 errors,
                                 durations,
                                 direction,
-                            ]
+                            ],
                         ],
                         columns=output_metrics,
                         index=[metric],

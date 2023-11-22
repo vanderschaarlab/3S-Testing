@@ -144,7 +144,7 @@ class TimeGANPlugin(Plugin):
         super().__init__()
 
         log.info(
-            f"""TimeGAN: mode = {mode} dataloader_sampling_strategy = {dataloader_sampling_strategy}"""
+            f"""TimeGAN: mode = {mode} dataloader_sampling_strategy = {dataloader_sampling_strategy}""",
         )
         self.n_iter = n_iter
         self.n_units_conditional = n_units_conditional
@@ -198,15 +198,22 @@ class TimeGANPlugin(Plugin):
             IntegerDistribution(name="n_iter", low=100, high=1000, step=100),
             IntegerDistribution(name="generator_n_layers_hidden", low=1, high=4),
             IntegerDistribution(
-                name="generator_n_units_hidden", low=50, high=150, step=50
+                name="generator_n_units_hidden",
+                low=50,
+                high=150,
+                step=50,
             ),
             CategoricalDistribution(
-                name="generator_nonlin", choices=["relu", "leaky_relu", "tanh", "elu"]
+                name="generator_nonlin",
+                choices=["relu", "leaky_relu", "tanh", "elu"],
             ),
             FloatDistribution(name="generator_dropout", low=0, high=0.2),
             IntegerDistribution(name="discriminator_n_layers_hidden", low=1, high=4),
             IntegerDistribution(
-                name="discriminator_n_units_hidden", low=50, high=150, step=50
+                name="discriminator_n_units_hidden",
+                low=50,
+                high=150,
+                step=50,
             ),
             CategoricalDistribution(
                 name="discriminator_nonlin",
@@ -381,7 +388,8 @@ class TimeGANPlugin(Plugin):
             )
             outcome_raw = self.outcome_encoder.inverse_transform(outcome_enc)
             outcome = pd.DataFrame(
-                outcome_raw, columns=self.data_info["outcome_features"]
+                outcome_raw,
+                columns=self.data_info["outcome_features"],
             )
 
             if self.data_info["data_type"] == "time_series":

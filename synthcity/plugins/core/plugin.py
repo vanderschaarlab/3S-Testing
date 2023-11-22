@@ -178,7 +178,7 @@ class Plugin(Serializable, metaclass=ABCMeta):
 
         if not X_syn.satisfies(gen_constraints) and self.strict:
             raise RuntimeError(
-                f"Plugin {self.name()} failed to meet the synthetic constraints."
+                f"Plugin {self.name()} failed to meet the synthetic constraints.",
             )
 
         if self.strict:
@@ -208,7 +208,11 @@ class Plugin(Serializable, metaclass=ABCMeta):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _safe_generate(
-        self, gen_cbk: Callable, count: int, syn_schema: Schema, **kwargs: Any
+        self,
+        gen_cbk: Callable,
+        count: int,
+        syn_schema: Schema,
+        **kwargs: Any,
     ) -> DataLoader:
         constraints = syn_schema.as_constraints()
 
@@ -217,7 +221,8 @@ class Plugin(Serializable, metaclass=ABCMeta):
             # sample
             iter_samples = gen_cbk(count, **kwargs)
             iter_samples_df = pd.DataFrame(
-                iter_samples, columns=self.schema().features()
+                iter_samples,
+                columns=self.schema().features(),
             )
             # validate schema
             iter_samples_df = self.schema().adapt_dtypes(iter_samples_df)
@@ -236,7 +241,11 @@ class Plugin(Serializable, metaclass=ABCMeta):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def _safe_generate_time_series(
-        self, gen_cbk: Callable, count: int, syn_schema: Schema, **kwargs: Any
+        self,
+        gen_cbk: Callable,
+        count: int,
+        syn_schema: Schema,
+        **kwargs: Any,
     ) -> DataLoader:
         assert self.data_info["data_type"] in ["time_series", "time_series_survival"]
 
@@ -250,7 +259,8 @@ class Plugin(Serializable, metaclass=ABCMeta):
             # sample
             if self.data_info["data_type"] == "time_series":
                 static, temporal, temporal_horizons, outcome = gen_cbk(
-                    count - offset, **kwargs
+                    count - offset,
+                    **kwargs,
                 )
                 loader = TimeSeriesDataLoader(
                     temporal_data=temporal,
@@ -261,7 +271,8 @@ class Plugin(Serializable, metaclass=ABCMeta):
                 )
             elif self.data_info["data_type"] == "time_series_survival":
                 static, temporal, temporal_horizons, T, E = gen_cbk(
-                    count - offset, **kwargs
+                    count - offset,
+                    **kwargs,
                 )
                 loader = TimeSeriesSurvivalDataLoader(
                     temporal_data=temporal,
@@ -420,7 +431,7 @@ class PluginLoader:
 
         if not issubclass(cls, self._expected_type):
             raise ValueError(
-                f"Plugin {name} must derive the {self._expected_type} interface."
+                f"Plugin {name} must derive the {self._expected_type} interface.",
             )
 
         self._plugins[name] = cls
